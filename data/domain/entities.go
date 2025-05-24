@@ -5,7 +5,7 @@ import "time"
 type ClientVersion string
 
 const (
-	V1 ClientVersion = "api.bullean_ai.com/v1"
+	V1 ClientVersion = "api.bullean_ai.com"
 )
 
 type ClientConfig struct {
