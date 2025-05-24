@@ -19,13 +19,13 @@ func NewDataSet(policy_range int, candles []domain.Candle) domain.IDataSet {
 // 0)Hold 1)Buy 2)Sell
 func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.Candle) int) {
 	for i := len(d.Candles) - d.PolicyRange - 1; i > 0; i-- {
-		if policy(d.Candles[i:i+d.PolicyRange]) == 0 {
-			d.Features = append(d.Features, domain.Data{
-				Name:     config.FeatName,
-				Features: d.GetFeatureValues(d.Candles[i:i+d.PolicyRange], config.FeatType),
-				Label:    0,
-			})
+		signal := policy(d.Candles[i : i+d.PolicyRange])
+		data := domain.Data{
+			Name:     config.FeatName,
+			Features: d.GetFeatureValues(d.Candles[i:i+d.PolicyRange], config.FeatType),
+			Label:    signal,
 		}
+		d.Features = append(d.Features, data)
 	}
 }
 

@@ -43,7 +43,7 @@ type Trade struct {
 type Data struct {
 	Name     string    `json:"name"`
 	Features []float64 `json:"feature"`
-	Label    float64   `json:"label"`
+	Label    int       `json:"label"`
 }
 
 type PolicyConfig struct {
