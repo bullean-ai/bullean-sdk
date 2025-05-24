@@ -9,7 +9,7 @@ import (
 	"net/url"
 )
 
-type Client struct {
+type client struct {
 	conn *websocket.Conn `json:"conn"`
 	Name string          `json:"name"`
 }
@@ -28,10 +28,10 @@ func NewClient(config domain.ClientConfig) domain.IClient {
 	}
 	defer conn.Close()
 
-	return &Client{conn: conn, Name: config.Name}
+	return &client{conn: conn, Name: config.Name}
 }
 
-func (c Client) OnCandle(fn func(domain.Candle)) {
+func (c client) OnCandle(fn func(domain.Candle)) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -52,7 +52,7 @@ func (c Client) OnCandle(fn func(domain.Candle)) {
 	}()
 }
 
-func (c Client) OnReady() []domain.Candle {
+func (c client) OnReady() []domain.Candle {
 	//TODO implement me
 	panic("implement me")
 }
