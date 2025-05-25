@@ -47,6 +47,7 @@ type Data struct {
 }
 
 type PolicyConfig struct {
-	FeatName string      `json:"feat_name"`
-	FeatType FeatureType `json:"feat_type"`
+	FeatName    string      `json:"feat_name"`
+	FeatType    FeatureType `json:"feat_type"`
+	PolicyRange int         `json:"policy_range"`
 }

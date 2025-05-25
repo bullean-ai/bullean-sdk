@@ -3,26 +3,24 @@ package data
 import "github.com/bullean-ai/bullean-sdk/data/domain"
 
 type dataSet struct {
-	Candles     []domain.Candle `json:"candles"`
-	Features    []domain.Data   `json:"features"`
-	PolicyRange int             `json:"policy_range"`
+	Candles  []domain.Candle `json:"candles"`
+	Features []domain.Data   `json:"features"`
 }
 
-func NewDataSet(policy_range int, candles []domain.Candle) domain.IDataSet {
+func NewDataSet(candles []domain.Candle) domain.IDataSet {
 	return &dataSet{
-		Candles:     candles,
-		PolicyRange: policy_range,
+		Candles: candles,
 	}
 }
 
 // CreatePolicy Policy is created by the callback function.
 // 0)Hold 1)Buy 2)Sell
 func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.Candle) int) {
-	for i := len(d.Candles) - d.PolicyRange - 1; i > 0; i-- {
-		signal := policy(d.Candles[i : i+d.PolicyRange])
+	for i := len(d.Candles) - config.PolicyRange - 1; i > 0; i-- {
+		signal := policy(d.Candles[i : i+config.PolicyRange])
 		data := domain.Data{
 			Name:     config.FeatName,
-			Features: d.GetFeatureValues(d.Candles[i:i+d.PolicyRange], config.FeatType),
+			Features: d.GetFeatureValues(d.Candles[i:i+config.PolicyRange], config.FeatType),
 			Label:    signal,
 		}
 		d.Features = append(d.Features, data)
@@ -57,22 +55,4 @@ func (d *dataSet) GetFeatureValues(candles []domain.Candle, feat_type domain.Fea
 		}
 	}
 	return
-}
-
-// ClosePercentagePolicy is a default policy
-func ClosePercentagePolicy(candles []domain.Candle) int {
-	perChange := 0.
-	for i, _ := range candles {
-		if i == 0 {
-			continue
-		}
-		perChange += ((candles[i].Open - candles[i-1].Open) / candles[i-1].Open) * 100
-	}
-	if perChange > 0.01 {
-		return 1
-	} else if perChange < 0.01 && perChange > -.01 {
-		return 0
-	} else {
-		return -1
-	}
 }
