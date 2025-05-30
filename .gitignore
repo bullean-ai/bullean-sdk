@@ -1,2 +1,5 @@
 .idea
 ./test.go
+index.html
+wasm_exec.js
+exec.wasm

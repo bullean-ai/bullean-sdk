@@ -2,10 +2,12 @@ package domain
 
 import "time"
 
+const HISTORY_LIMIT = 40000
+
 type ClientVersion string
 
 const (
-	V1 ClientVersion = "api.bullean_ai.com"
+	V1 ClientVersion = "localhost:5067"
 )
 
 type FeatureType int
@@ -19,25 +21,58 @@ const (
 )
 
 type ClientConfig struct {
-	Version        ClientVersion `json:"client_version"`
-	Name           string        `json:"client_name"`
-	ApiKey         string        `json:"api_key"`
-	ApiSecret      string        `json:"api_secret"`
-	PrepareDataset bool          `json:"prepare_dataset"`
+	Version      ClientVersion `json:"client_version"`
+	Name         string        `json:"client_name"`
+	ApiKey       string        `json:"api_key"`
+	ApiSecret    string        `json:"api_secret"`
+	StreamReqMsg StreamReqMsg  `json:"subscription"`
 }
 
+type StreamReqMsg struct {
+	TypeOf        string         `json:"type_of"`
+	History       bool           `json:"history"`
+	HistorySize   int            `json:"history_size"`
+	Subscriptions []Subscription `json:"subscriptions"`
+}
+
+type Subscription struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type ResponseType string
+
+const (
+	HISTORY    ResponseType = "history"
+	NEW_CANDLE ResponseType = "new_candle"
+)
+
+type StreamResMsg struct {
+	TypeOf  ResponseType `json:"type_of"`
+	Candles []Candle     `json:"candle"`
+	IsDone  bool         `json:"is_done"`
+}
 type Candle struct {
-	OpenTime  *time.Time `json:"open_time"`
-	Open      float64    `json:"open"`
-	High      float64    `json:"high"`
-	Low       float64    `json:"low"`
-	Close     float64    `json:"close"`
-	CloseTime *time.Time `json:"close_time"`
-	Volume    float64    `json:"volume"`
-	Trades    []*Trade   `json:"trades"`
+	Symbol    string     `json:"s"`
+	OpenTime  *time.Time `json:"t"`
+	Open      float64    `json:"o"`
+	High      float64    `json:"h"`
+	Low       float64    `json:"l"`
+	Close     float64    `json:"c"`
+	CloseTime *time.Time `json:"T"`
+	Volume    float64    `json:"v"`
+	Trades    []*Trade   `json:"tr"`
 }
 
 type Trade struct {
+	EventType    string     `json:"e"`
+	EventTime    *time.Time `json:"E"`
+	Symbol       string     `json:"s"`
+	TradeId      string     `json:"t"`
+	Price        float64    `json:"p"`
+	Quantity     float64    `json:"q"`
+	TradeTime    *time.Time `json:"T"`
+	IsBuyerMaker bool       `json:"m"`
 }
 
 type Data struct {
