@@ -23,7 +23,7 @@ func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.
 			Features: d.GetFeatureValues(d.Candles[i:i+config.PolicyRange], config.FeatType),
 			Label:    signal,
 		}
-		d.Features = append(d.Features, data)
+		d.Features = append([]domain.Data{data}, d.Features...)
 	}
 }
 

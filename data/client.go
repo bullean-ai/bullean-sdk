@@ -75,7 +75,7 @@ func (c client) OnReady(fn func([]domain.Candle)) {
 		}
 	}
 	if msg.IsDone {
-		fn(candles)
+		go fn(candles)
 		candles = nil
 	}
 }
