@@ -62,7 +62,8 @@ func main() {
 			})
 		}
 		candless = candles
-		trainer := ffnn.NewTrainer(solver.NewAdam(0.001, 0, 0, 1e-15), 1)
+		trainer := ffnn.NewTrainer(solver.NewSGD(0.005, 0.5, 1e-6, true), 1)
+		//trainer := ffnn.NewTrainer(solver.NewAdam(0.001, 0, 0, 1e-15), 1)
 		trainer.Train(neural, examples, examples, 100)
 
 	})
