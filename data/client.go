@@ -13,6 +13,7 @@ type client struct {
 	conn    *websocket.Conn `json:"conn"`
 	Name    string          `json:"name"`
 	DataSet domain.IDataSet `json:"data_set"`
+	IsReady bool            `json:"is_ready"`
 }
 
 func NewClient(config domain.ClientConfig) domain.IClient {
@@ -67,7 +68,7 @@ func (c client) OnReady(fn func([]domain.Candle)) {
 		}
 		if msg.TypeOf == domain.HISTORY {
 			for _, candle := range msg.Candles {
-				candles = append([]domain.Candle{candle}, candles...)
+				candles = append(candles, candle)
 			}
 		}
 		if msg.IsDone {
@@ -77,6 +78,7 @@ func (c client) OnReady(fn func([]domain.Candle)) {
 	if msg.IsDone {
 		go fn(candles)
 		candles = nil
+		c.IsReady = true
 	}
 }
 

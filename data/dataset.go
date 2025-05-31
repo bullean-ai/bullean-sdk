@@ -16,7 +16,7 @@ func NewDataSet(candles []domain.Candle) domain.IDataSet {
 // CreatePolicy Policy is created by the callback function.
 // 0)Hold 1)Buy 2)Sell
 func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.Candle) int) {
-	for i := len(d.Candles) - config.PolicyRange - 1; i > 0; i-- {
+	for i := len(d.Candles) - config.PolicyRange; i >= 0; i-- {
 		signal := policy(d.Candles[i : i+config.PolicyRange])
 		data := domain.Data{
 			Name:     config.FeatName,

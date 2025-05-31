@@ -8,7 +8,7 @@ import (
 var DefaultConfig = func(input_len int) *domain.Config {
 	return &domain.Config{
 		Inputs:     input_len,
-		Layout:     []int{10, 10, 10, 10, 10, 10, 2},
+		Layout:     []int{200, 200, 200, 200, 200, 200, 200, 200, 200, 2},
 		Activation: domain.ActivationSigmoid,
 		Mode:       domain.ModeMultiClass,
 		Weight:     synapse.NewNormal(1e-15, 1e-15),
