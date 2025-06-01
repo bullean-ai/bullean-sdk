@@ -2,7 +2,7 @@ package ffnn
 
 import (
 	"encoding/json"
-	"github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-go/neurals/domain"
 )
 
 // Dump is a neurals network dump

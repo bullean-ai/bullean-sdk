@@ -2,7 +2,7 @@ package data
 
 import (
 	"encoding/json"
-	"github.com/bullean-ai/bullean-sdk/data/domain"
+	"github.com/bullean-ai/bullean-go/data/domain"
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"

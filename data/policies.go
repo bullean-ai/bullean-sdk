@@ -1,6 +1,6 @@
 package data
 
-import "github.com/bullean-ai/bullean-sdk/data/domain"
+import "github.com/bullean-ai/bullean-go/data/domain"
 
 // ClosePercentagePolicy is a default close price percentage change policy
 func ClosePercentagePolicy(candles []domain.Candle) int {

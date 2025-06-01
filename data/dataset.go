@@ -1,6 +1,6 @@
 package data
 
-import "github.com/bullean-ai/bullean-sdk/data/domain"
+import "github.com/bullean-ai/bullean-go/data/domain"
 
 type dataSet struct {
 	Candles  []domain.Candle `json:"candles"`

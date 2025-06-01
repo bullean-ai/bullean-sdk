@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/bullean-ai/bullean-go/binance"
+	binanceDomain "github.com/bullean-ai/bullean-go/binance/domain"
 	"github.com/bullean-ai/bullean-go/data"
 	"github.com/bullean-ai/bullean-go/data/domain"
 	ffnnDomain "github.com/bullean-ai/bullean-go/neurals/domain"
 	"github.com/bullean-ai/bullean-go/neurals/ffnn"
 	"github.com/bullean-ai/bullean-go/neurals/ffnn/solver"
+	"math"
 )
 
 func main() {
@@ -29,12 +32,15 @@ func main() {
 			},
 		},
 	})
+	binanceClient := binance.NewBinanceClient(binanceDomain.BinanceClientConfig{
+		ApiKey:    "xsCifNydCadBpp4gmL3TJGmNlNWt6nkKTfdhOmEmFqM8WqPqyXBAoDk97YviHorI",
+		ApiSecret: "6KgbU2UNZ8rdjhkOLNf1QWJ3c941sTbkaouf0TJ0OSAiFkIqpq4n8MWUKeQCE7st",
+	})
 	var candless []domain.Candle
 	var examples ffnnDomain.Examples
-	ranger := 300
-
+	ranger := 100
 	neural := ffnn.NewNeural(ffnnDomain.DefaultFFNNConfig(ranger))
-
+	isReady := false
 	client.OnReady(func(candles []domain.Candle) {
 
 		dataset := data.NewDataSet(candles)
@@ -42,7 +48,7 @@ func main() {
 		dataset.CreatePolicy(domain.PolicyConfig{
 			FeatName:    "feature_per_change",
 			FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
-			PolicyRange: 100,
+			PolicyRange: ranger,
 		}, data.ClosePercentagePolicy)
 
 		dataFrame := dataset.GetDataSet()
@@ -63,13 +69,16 @@ func main() {
 			})
 		}
 		candless = candles
-		trainer := ffnn.NewTrainer(solver.NewAdam(0.001, 0, 0, 1e-12), 1)
+		trainer := ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1)
 		//trainer := ffnn.NewBatchTrainer(solver.NewSGD(0.0005, 0.1, 0, true), 1, ranger, 12)
-		trainer.Train(neural, examples, examples, 1000)
+		trainer.Train(neural, examples, examples, 15)
+		isReady = true
 
 	})
 
+	lastprediction := 0
 	client.OnCandle(func(candles []domain.Candle) {
+		var prediction int
 		for _, candle := range candles {
 			if candle.Symbol == "BNBUSDT" {
 				candless = append(candless, candle)
@@ -98,8 +107,34 @@ func main() {
 						Response: label,
 					})
 				}
-				prediction := neural.Predict(examples[len(examples)-1].Input)
-				fmt.Println(prediction)
+				pred := neural.Predict(examples[len(examples)-1].Input)
+				buy := math.Round(pred[0])
+				if buy == 1 {
+					prediction = 1
+				} else {
+					prediction = -1
+				}
+
+				fmt.Println(pred)
+				if isReady == false {
+					continue
+				}
+
+				if prediction == 1 && lastprediction == 1 {
+					binanceClient.Buy(binanceDomain.BuyInfo{
+						Price:      candle.Close,
+						BaseAsset:  "BNB",
+						QuoteAsset: "USDC",
+					})
+				} else if prediction == -1 && lastprediction == -1 {
+					binanceClient.Sell(binanceDomain.SellInfo{
+						Price:      candle.Close,
+						BaseAsset:  "BNB",
+						QuoteAsset: "USDC",
+					})
+				}
+
+				lastprediction = prediction
 			}
 		}
 

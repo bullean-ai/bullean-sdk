@@ -1,9 +1,9 @@
 package neuron
 
 import (
-	"github.com/bullean-ai/bullean-sdk/neurals/domain"
-	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse"
-	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-go/neurals/domain"
+	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse/activation"
 )
 
 // Neuron is a neurals network node

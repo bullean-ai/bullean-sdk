@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/bullean-ai/bullean-sdk/data"
-	"github.com/bullean-ai/bullean-sdk/data/domain"
+	"github.com/bullean-ai/bullean-go/data"
+	"github.com/bullean-ai/bullean-go/data/domain"
 )
 
 func main() {

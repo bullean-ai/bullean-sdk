@@ -3,10 +3,10 @@ package ffnn
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bullean-ai/bullean-sdk/neurals/domain"
-	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer"
-	synapse "github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse"
-	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-go/neurals/domain"
+	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer"
+	synapse "github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse/activation"
 	"os"
 )
 

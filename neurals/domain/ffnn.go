@@ -1,9 +1,20 @@
 package domain
 
 import (
-	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse"
 	"math/rand"
 )
+
+var DefaultFFNNConfig = func(input_len int) *Config {
+	return &Config{
+		Inputs:     input_len,
+		Layout:     []int{30, 70, 70, 70, 70, 70, 70, 30, 2},
+		Activation: ActivationSigmoid,
+		Mode:       ModeMultiClass,
+		Weight:     synapse.NewNormal(1e-20, 1e-20),
+		Bias:       true,
+	}
+}
 
 // Differentiable is an activation function and its first order derivative,
 // where the latter is expressed as a function of the former for efficiency
