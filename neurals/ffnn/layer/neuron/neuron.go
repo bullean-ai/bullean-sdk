@@ -1,12 +1,12 @@
 package neuron
 
 import (
-	"github.com/bullean-ai/bullean-sdk/data/domain"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer/neuron/synapse"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse/activation"
 )
 
-// Neuron is a neural network node
+// Neuron is a neurals network node
 type Neuron struct {
 	A     domain.ActivationType
 	In    []*synapse.Synapse

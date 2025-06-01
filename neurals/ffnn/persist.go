@@ -2,10 +2,10 @@ package ffnn
 
 import (
 	"encoding/json"
-	"github.com/bullean-ai/bullean-sdk/data/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/domain"
 )
 
-// Dump is a neural network dump
+// Dump is a neurals network dump
 type Dump struct {
 	Config  *domain.Config
 	Weights [][][]float64

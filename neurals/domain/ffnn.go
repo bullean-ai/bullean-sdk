@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse"
 	"math/rand"
 )
 

@@ -1,9 +1,9 @@
 package ffnn
 
 import (
-	"github.com/bullean-ai/bullean-sdk/data/domain"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/solver"
+	"github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/solver"
 	"sync"
 	"time"
 )

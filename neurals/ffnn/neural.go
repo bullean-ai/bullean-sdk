@@ -1,21 +1,23 @@
 package ffnn
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/bullean-ai/bullean-sdk/data/domain"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer/neuron/synapse"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer"
+	synapse "github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse/activation"
+	"os"
 )
 
-// Neural is a neural network
+// Neural is a neurals network
 type Neural struct {
 	Layers []*layer.Layer
 	Biases [][]*synapse.Synapse
 	Config *domain.Config
 }
 
-// NewNeural returns a new neural network
+// NewNeural returns a new neurals network
 func NewNeural(c *domain.Config) *Neural {
 
 	if c.Weight == nil {
@@ -141,4 +143,28 @@ func (n *Neural) String() string {
 		s = fmt.Sprintf("%s\n%s", s, l)
 	}
 	return s
+}
+
+func (n *Neural) Save(directory string) (err error) {
+	var bytes []byte
+	var file *os.File
+
+	file, err = os.Open(directory)
+	if err != nil {
+		return err
+	}
+	defer func(file *os.File) {
+		err = file.Close()
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+	}(file)
+
+	bytes, err = json.Marshal(n)
+
+	_, err = file.Write(bytes)
+	if err != nil {
+		return err
+	}
+	return
 }

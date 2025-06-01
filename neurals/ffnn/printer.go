@@ -2,8 +2,8 @@ package ffnn
 
 import (
 	"fmt"
-	"github.com/bullean-ai/bullean-sdk/data/domain"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer/neuron/synapse/activation"
 	"os"
 	"text/tabwriter"
 	"time"

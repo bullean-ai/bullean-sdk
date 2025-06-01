@@ -1,13 +1,13 @@
 package ffnn
 
 import (
-	"github.com/bullean-ai/bullean-sdk/data/domain"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/layer"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/solver"
+	"github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/layer"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/solver"
 	"time"
 )
 
-// Trainer is a neural network trainer
+// Trainer is a neurals network trainer
 type Trainer interface {
 	Train(n *Neural, examples, validation domain.Examples, iterations int)
 	FeedForward(n *Neural, e domain.Example)
@@ -58,8 +58,8 @@ func (t *OnlineTrainer) Train(n *Neural, examples, validation domain.Examples, i
 	t.solver.Init(n.NumWeights())
 	accuracy := .0
 	ts := time.Now()
+	examples.Shuffle()
 	for i := 1; i <= iterations; i++ {
-		examples.Shuffle()
 		for j := 0; j < len(examples); j++ {
 			t.FeedForward(n, examples[j])
 			t.BackPropagate(n, examples[j], i)

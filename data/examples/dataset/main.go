@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/bullean-ai/bullean-sdk/data"
 	"github.com/bullean-ai/bullean-sdk/data/domain"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn"
-	"github.com/bullean-ai/bullean-sdk/data/neural/ffnn/solver"
+	ffnnDomain "github.com/bullean-ai/bullean-sdk/neurals/domain"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn"
+	"github.com/bullean-ai/bullean-sdk/neurals/ffnn/solver"
 )
 
 func main() {
@@ -29,8 +30,8 @@ func main() {
 		},
 	})
 	var candless []domain.Candle
-	var examples domain.Examples
-	ranger := 100
+	var examples ffnnDomain.Examples
+	ranger := 300
 
 	neural := ffnn.NewNeural(ffnn.DefaultConfig(ranger))
 
@@ -41,7 +42,7 @@ func main() {
 		dataset.CreatePolicy(domain.PolicyConfig{
 			FeatName:    "feature_per_change",
 			FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
-			PolicyRange: ranger,
+			PolicyRange: 100,
 		}, data.ClosePercentagePolicy)
 
 		dataFrame := dataset.GetDataSet()
@@ -56,15 +57,15 @@ func main() {
 			} else {
 				label = []float64{0, 1}
 			}
-			examples = append(examples, domain.Example{
+			examples = append(examples, ffnnDomain.Example{
 				Input:    dataFrame[i].Features,
 				Response: label,
 			})
 		}
 		candless = candles
-		trainer := ffnn.NewTrainer(solver.NewSGD(0.005, 0.5, 1e-6, true), 1)
-		//trainer := ffnn.NewTrainer(solver.NewAdam(0.001, 0, 0, 1e-15), 1)
-		trainer.Train(neural, examples, examples, 100)
+		trainer := ffnn.NewTrainer(solver.NewAdam(0.001, 0, 0, 1e-12), 1)
+		//trainer := ffnn.NewBatchTrainer(solver.NewSGD(0.0005, 0.1, 0, true), 1, ranger, 12)
+		trainer.Train(neural, examples, examples, 1000)
 
 	})
 
@@ -92,7 +93,7 @@ func main() {
 					} else {
 						label = []float64{0, 1}
 					}
-					examples = append(examples, domain.Example{
+					examples = append(examples, ffnnDomain.Example{
 						Input:    dataFrame[i].Features,
 						Response: label,
 					})
