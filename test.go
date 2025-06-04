@@ -23,7 +23,7 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 10000,
+			HistorySize: 40000,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -71,7 +71,7 @@ func main() {
 		candless = candles
 		trainer := ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1)
 		//trainer := ffnn.NewBatchTrainer(solver.NewSGD(0.0005, 0.1, 0, true), 1, ranger, 12)
-		trainer.Train(neural, examples, examples, 15)
+		trainer.Train(neural, examples, examples, 20)
 		isReady = true
 
 	})
@@ -123,14 +123,14 @@ func main() {
 				if prediction == 1 && lastprediction == 1 {
 					binanceClient.Buy(binanceDomain.BuyInfo{
 						Price:      candle.Close,
-						BaseAsset:  "BNB",
-						QuoteAsset: "USDC",
+						QuoteAsset: "BNB",
+						BaseAsset:  "USDC",
 					})
 				} else if prediction == -1 && lastprediction == -1 {
 					binanceClient.Sell(binanceDomain.SellInfo{
 						Price:      candle.Close,
-						BaseAsset:  "BNB",
-						QuoteAsset: "USDC",
+						QuoteAsset: "BNB",
+						BaseAsset:  "USDC",
 					})
 				}
 

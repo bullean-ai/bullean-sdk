@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/adshao/go-binance/v2"
+	"github.com/adshao/go-binance/v2/futures"
 	"github.com/bullean-ai/bullean-go/binance/domain"
 	"math"
 )
@@ -23,6 +24,7 @@ func NewBinanceClient(config domain.BinanceClientConfig) domain.IBinanceClient {
 		fmt.Println("Account Info Error, check your api restrictions")
 		return nil
 	}
+	client.NewSetServerTimeService().Do(context.Background())
 	return &binanceClient{
 		ApiKey:       config.ApiKey,
 		ApiSecret:    config.ApiSecret,
@@ -38,7 +40,7 @@ func (b *binanceClient) Buy(req_dat domain.BuyInfo) {
 
 	// Cancel Order
 	if b.lastOrder != nil {
-		_, err = b.client.NewCancelOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.BaseAsset, req_dat.QuoteAsset)).
+		_, err = b.client.NewCancelOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
 			OrderID(b.lastOrder.OrderID).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
@@ -53,10 +55,10 @@ func (b *binanceClient) Buy(req_dat domain.BuyInfo) {
 				fmt.Println(ToFloat(bl.Free), ToFloat(bl.Locked))
 			}
 		}
-		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.BaseAsset, req_dat.QuoteAsset)).
+		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
 			Side(binance.SideTypeBuy).Type(binance.OrderTypeLimit).
 			TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown((balance/req_dat.Price)*99.9/100, 2))).
-			Price(fmt.Sprintf("%.4f", req_dat.Price-0.0002)).Do(context.Background())
+			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -81,10 +83,10 @@ func (b *binanceClient) Sell(req_dat domain.SellInfo) {
 				fmt.Println(fmt.Sprintf("%.5f", f), ToFloat(bl.Locked))
 			}
 		}
-		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(req_dat.QuoteAsset).
+		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
 			Side(binance.SideTypeSell).Type(binance.OrderTypeLimit).
 			TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown(balance*99.9/100, 2))).
-			Price(fmt.Sprintf("%.4f", req_dat.Price+0.0002)).Do(context.Background())
+			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return
