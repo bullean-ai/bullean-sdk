@@ -2,7 +2,7 @@ package ffnn
 
 import (
 	"encoding/json"
-	"github.com/bullean-ai/bullean-go/neurals/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/domain"
 )
 
 // Dump is a neurals network dump
@@ -12,7 +12,7 @@ type Dump struct {
 }
 
 // ApplyWeights sets the weights from a three-dimensional slice
-func (n *Neural) ApplyWeights(weights [][][]float64) {
+func (n *FFNN) ApplyWeights(weights [][][]float64) {
 	for i, l := range n.Layers {
 		for j := range l.Neurons {
 			for k := range l.Neurons[j].In {
@@ -23,7 +23,7 @@ func (n *Neural) ApplyWeights(weights [][][]float64) {
 }
 
 // Weights returns all weights in sequence
-func (n Neural) Weights() [][][]float64 {
+func (n FFNN) Weights() [][][]float64 {
 	weights := make([][][]float64, len(n.Layers))
 	for i, l := range n.Layers {
 		weights[i] = make([][]float64, len(l.Neurons))
@@ -38,28 +38,28 @@ func (n Neural) Weights() [][][]float64 {
 }
 
 // Dump generates a network dump
-func (n *Neural) Dump() *Dump {
+func (n *FFNN) Dump() *Dump {
 	return &Dump{
 		Config:  n.Config,
 		Weights: n.Weights(),
 	}
 }
 
-// FromDump restores a Neural from a dump
-func FromDump(dump *Dump) *Neural {
-	n := NewNeural(dump.Config)
+// FromDump restores a FFNN from a dump
+func FromDump(dump *Dump) *FFNN {
+	n := NewFFNN(dump.Config)
 	n.ApplyWeights(dump.Weights)
 
 	return n
 }
 
 // Marshal marshals to JSON from network
-func (n *Neural) Marshal() ([]byte, error) {
+func (n *FFNN) Marshal() ([]byte, error) {
 	return json.Marshal(n.Dump())
 }
 
 // Unmarshal restores network from a JSON blob
-func Unmarshal(bytes []byte) (*Neural, error) {
+func Unmarshal(bytes []byte) (*FFNN, error) {
 	var dump Dump
 	if err := json.Unmarshal(bytes, &dump); err != nil {
 		return nil, err

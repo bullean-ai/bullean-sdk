@@ -1,6 +1,6 @@
 package activation
 
-import "github.com/bullean-ai/bullean-go/neurals/domain"
+import "github.com/bullean-ai/bullean-go/neural_nets/domain"
 
 // Linear is a linear activator
 type Linear struct{}

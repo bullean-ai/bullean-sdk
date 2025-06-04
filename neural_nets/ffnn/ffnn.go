@@ -3,22 +3,22 @@ package ffnn
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bullean-ai/bullean-go/neurals/domain"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer"
-	synapse "github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-go/neural_nets/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer"
+	synapse "github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron/synapse/activation"
 	"os"
 )
 
-// Neural is a neurals network
-type Neural struct {
+// FFNN is a neurals network
+type FFNN struct {
 	Layers []*layer.Layer
 	Biases [][]*synapse.Synapse
 	Config *domain.Config
 }
 
-// NewNeural returns a new neurals network
-func NewNeural(c *domain.Config) *Neural {
+// NewFFNN returns a new neurals network
+func NewFFNN(c *domain.Config) *FFNN {
 
 	if c.Weight == nil {
 		c.Weight = synapse.NewUniform(0.5, 0)
@@ -50,7 +50,7 @@ func NewNeural(c *domain.Config) *Neural {
 		}
 	}
 
-	return &Neural{
+	return &FFNN{
 		Layers: layers,
 		Biases: biases,
 		Config: c,
@@ -81,7 +81,7 @@ func initializeLayers(c *domain.Config) []*layer.Layer {
 	return layers
 }
 
-func ConnectPreparedNeural(neural *Neural) {
+func ConnectPreparedFFNN(neural *FFNN) {
 
 	for i := 0; i < len(neural.Layers)-1; i++ {
 		neural.Layers[i].ConnectPrepared(neural.Layers[i+1])
@@ -90,7 +90,7 @@ func ConnectPreparedNeural(neural *Neural) {
 	return
 }
 
-func (n *Neural) Fire() {
+func (n *FFNN) Fire() {
 	for _, b := range n.Biases {
 		for _, s := range b {
 			s.Fire(1)
@@ -102,7 +102,7 @@ func (n *Neural) Fire() {
 }
 
 // Forward computes a forward pass
-func (n *Neural) Forward(input []float64) error {
+func (n *FFNN) Forward(input []float64) error {
 	if len(input) != n.Config.Inputs {
 		return fmt.Errorf("Invalid input dimension - expected: %d got: %d", n.Config.Inputs, len(input))
 	}
@@ -116,7 +116,7 @@ func (n *Neural) Forward(input []float64) error {
 }
 
 // Predict computes a forward pass and returns a prediction
-func (n *Neural) Predict(input []float64) []float64 {
+func (n *FFNN) Predict(input []float64) []float64 {
 	n.Forward(input)
 
 	outLayer := n.Layers[len(n.Layers)-1]
@@ -128,7 +128,7 @@ func (n *Neural) Predict(input []float64) []float64 {
 }
 
 // NumWeights returns the number of weights in the network
-func (n *Neural) NumWeights() (num int) {
+func (n *FFNN) NumWeights() (num int) {
 	for _, l := range n.Layers {
 		for _, n := range l.Neurons {
 			num += len(n.In)
@@ -137,7 +137,7 @@ func (n *Neural) NumWeights() (num int) {
 	return
 }
 
-func (n *Neural) String() string {
+func (n *FFNN) String() string {
 	var s string
 	for _, l := range n.Layers {
 		s = fmt.Sprintf("%s\n%s", s, l)
@@ -145,7 +145,7 @@ func (n *Neural) String() string {
 	return s
 }
 
-func (n *Neural) Save(directory string) (err error) {
+func (n *FFNN) Save(directory string) (err error) {
 	var bytes []byte
 	var file *os.File
 

@@ -1,7 +1,7 @@
 package activation
 
 import (
-	"github.com/bullean-ai/bullean-go/neurals/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/domain"
 	"math"
 )
 

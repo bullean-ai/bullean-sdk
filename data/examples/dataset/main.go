@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/bullean-ai/bullean-go/data"
 	"github.com/bullean-ai/bullean-go/data/domain"
-	ffnnDomain "github.com/bullean-ai/bullean-go/neurals/domain"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/solver"
+	ffnnDomain "github.com/bullean-ai/bullean-go/neural_nets/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/solver"
 )
 
 func main() {
@@ -33,8 +33,8 @@ func main() {
 	var examples ffnnDomain.Examples
 	ranger := 300
 
-	neural := ffnn.NewNeural(ffnnDomain.DefaultFFNNConfig(ranger))
-
+	var neuralNet ffnnDomain.IModel
+	neural := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
 	client.OnReady(func(candles []domain.Candle) {
 
 		dataset := data.NewDataSet(candles)
@@ -65,7 +65,7 @@ func main() {
 		candless = candles
 		trainer := ffnn.NewTrainer(solver.NewAdam(0.001, 0, 0, 1e-12), 1)
 		//trainer := ffnn.NewBatchTrainer(solver.NewSGD(0.0005, 0.1, 0, true), 1, ranger, 12)
-		trainer.Train(neural, examples, examples, 1000)
+		_, neuralNet = trainer.Train(neural, examples, examples, 1000)
 
 	})
 
@@ -98,7 +98,7 @@ func main() {
 						Response: label,
 					})
 				}
-				prediction := neural.Predict(examples[len(examples)-1].Input)
+				prediction := neuralNet.Predict(examples[len(examples)-1].Input)
 				fmt.Println(prediction)
 			}
 		}

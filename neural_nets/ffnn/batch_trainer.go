@@ -1,9 +1,9 @@
 package ffnn
 
 import (
-	"github.com/bullean-ai/bullean-go/neurals/domain"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/solver"
+	"github.com/bullean-ai/bullean-go/neural_nets/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/solver"
 	"sync"
 	"time"
 )
@@ -62,18 +62,18 @@ func NewBatchTrainer(solver solver.Solver, verbosity, batchSize, parallelism int
 }
 
 // Train trains n
-func (t *BatchTrainer) Train(n *Neural, examples, validation domain.Examples, iterations int) {
+func (t *BatchTrainer) Train(n *FFNN, examples, validation domain.Examples, iterations int) {
 	t.internalb = newBatchTraining(n.Layers, t.parallelism)
 
 	train := make(domain.Examples, len(examples))
 	copy(train, examples)
 
 	workCh := make(chan domain.Example, t.parallelism)
-	nets := make([]*Neural, t.parallelism)
+	nets := make([]*FFNN, t.parallelism)
 
 	wg := sync.WaitGroup{}
 	for i := 0; i < t.parallelism; i++ {
-		nets[i] = NewNeural(n.Config)
+		nets[i] = NewFFNN(n.Config)
 
 		go func(id int, workCh <-chan domain.Example) {
 			n := nets[id]
@@ -128,7 +128,7 @@ func (t *BatchTrainer) Train(n *Neural, examples, validation domain.Examples, it
 
 }
 
-func (t *BatchTrainer) calculateDeltas(n *Neural, ideal []float64, wid int) {
+func (t *BatchTrainer) calculateDeltas(n *FFNN, ideal []float64, wid int) {
 	loss := GetLoss(n.Config.Loss)
 	deltas := t.deltas[wid]
 	partialDeltas := t.partialDeltas[wid]
@@ -167,7 +167,7 @@ func (t *BatchTrainer) calculateDeltas(n *Neural, ideal []float64, wid int) {
 	}
 }
 
-func (t *BatchTrainer) update(n *Neural, it int) {
+func (t *BatchTrainer) update(n *FFNN, it int) {
 	var idx int
 	for i, l := range n.Layers {
 		iAD := t.accumulatedDeltas[i]

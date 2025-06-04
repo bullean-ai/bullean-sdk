@@ -1,6 +1,6 @@
 package activation
 
-import "github.com/bullean-ai/bullean-go/neurals/domain"
+import "github.com/bullean-ai/bullean-go/neural_nets/domain"
 
 // OutputActivation returns activation corresponding to prediction mode
 func OutputActivation(c domain.Mode) domain.ActivationType {

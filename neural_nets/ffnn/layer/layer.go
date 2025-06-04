@@ -2,10 +2,10 @@ package layer
 
 import (
 	"fmt"
-	"github.com/bullean-ai/bullean-go/neurals/domain"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/layer/neuron/synapse/activation"
+	"github.com/bullean-ai/bullean-go/neural_nets/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron/synapse"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron/synapse/activation"
 )
 
 // Layer is a set of neurons and corresponding activation

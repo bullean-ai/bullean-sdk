@@ -7,9 +7,10 @@ import (
 	binanceDomain "github.com/bullean-ai/bullean-go/binance/domain"
 	"github.com/bullean-ai/bullean-go/data"
 	"github.com/bullean-ai/bullean-go/data/domain"
-	ffnnDomain "github.com/bullean-ai/bullean-go/neurals/domain"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn"
-	"github.com/bullean-ai/bullean-go/neurals/ffnn/solver"
+	"github.com/bullean-ai/bullean-go/neural_nets"
+	ffnnDomain "github.com/bullean-ai/bullean-go/neural_nets/domain"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn"
+	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/solver"
 	"math"
 )
 
@@ -32,15 +33,30 @@ func main() {
 			},
 		},
 	})
-	binanceClient := binance.NewBinanceClient(binanceDomain.BinanceClientConfig{
+	binanceClient := binance.NewBinanceSpotClient(binanceDomain.BinanceClientConfig{
 		ApiKey:    "xsCifNydCadBpp4gmL3TJGmNlNWt6nkKTfdhOmEmFqM8WqPqyXBAoDk97YviHorI",
 		ApiSecret: "6KgbU2UNZ8rdjhkOLNf1QWJ3c941sTbkaouf0TJ0OSAiFkIqpq4n8MWUKeQCE7st",
 	})
 	var candless []domain.Candle
 	var examples ffnnDomain.Examples
-	ranger := 100
-	neural := ffnn.NewNeural(ffnnDomain.DefaultFFNNConfig(ranger))
 	isReady := false
+	ranger := 100
+
+	evaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
+		{
+			Model:   ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger)),
+			Trainer: ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1),
+		},
+		{
+			Model:   ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger)),
+			Trainer: ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1),
+		},
+		{
+			Model:   ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger)),
+			Trainer: ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1),
+		},
+	})
+
 	client.OnReady(func(candles []domain.Candle) {
 
 		dataset := data.NewDataSet(candles)
@@ -69,9 +85,9 @@ func main() {
 			})
 		}
 		candless = candles
-		trainer := ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1)
 		//trainer := ffnn.NewBatchTrainer(solver.NewSGD(0.0005, 0.1, 0, true), 1, ranger, 12)
-		trainer.Train(neural, examples, examples, 20)
+
+		evaluator.Train(examples, examples, 20)
 		isReady = true
 
 	})
@@ -107,7 +123,7 @@ func main() {
 						Response: label,
 					})
 				}
-				pred := neural.Predict(examples[len(examples)-1].Input)
+				pred := evaluator.Predict(examples[len(examples)-1].Input)
 				buy := math.Round(pred[0])
 				if buy == 1 {
 					prediction = 1
