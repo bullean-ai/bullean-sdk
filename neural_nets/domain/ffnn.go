@@ -8,8 +8,8 @@ import (
 var DefaultFFNNConfig = func(input_len int) *Config {
 	return &Config{
 		Inputs:     input_len,
-		Layout:     []int{30, 70, 70, 70, 70, 70, 70, 30, 2},
-		Activation: ActivationSigmoid,
+		Layout:     []int{30, 70, 70, 70, 70, 70, 70, 70, 30, 2},
+		Activation: ActivationTanh,
 		Mode:       ModeMultiClass,
 		Weight:     synapse.NewNormal(1e-20, 1e-20),
 		Bias:       true,
@@ -17,8 +17,9 @@ var DefaultFFNNConfig = func(input_len int) *Config {
 }
 
 type Neural struct {
-	Model   IModel
-	Trainer ITrainer
+	Model      IModel
+	Trainer    ITrainer
+	Iterations int
 }
 
 // Differentiable is an activation function and its first order derivative,

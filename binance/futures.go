@@ -20,7 +20,8 @@ func NewBinanceFuturesClient(config domain.BinanceClientConfig) domain.IBinanceC
 	account, _ := client.NewGetAccountService().Do(context.Background())
 	if account == nil {
 		fmt.Println("Account Info Error, check your api restrictions")
-		return nil
+		return &binanceSpotClient{}
+
 	}
 	client.NewSetServerTimeService().Do(context.Background())
 	return &binanceFuturesClient{

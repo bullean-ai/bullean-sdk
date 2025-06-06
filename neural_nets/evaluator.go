@@ -17,7 +17,7 @@ func NewEvaluator(neurals []domain.Neural) *Evaluator {
 	}
 }
 
-func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examples, iterations int) {
+func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examples) {
 	wg := &sync.WaitGroup{}
 
 	tAmount := len(train_data) / len(n.Neurals)
@@ -27,19 +27,29 @@ func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examp
 		v_truncated := validate_date[i*vAmount : (i+1)*vAmount]
 		wg.Add(1)
 		go func(neural domain.Neural, t_data domain.Examples, v_data domain.Examples, index int) {
-			_, n.Neurals[index].Model = neural.Trainer.Train(neural.Model, t_data, v_data, iterations)
+			_, n.Neurals[index].Model = neural.Trainer.Train(neural.Model, t_data, v_data, n.Neurals[index].Iterations)
 			wg.Done()
 		}(n.Neurals[i], t_truncated, v_truncated, i)
 	}
 
-	//wg.Add(1)
-	// Evaluate the last neural with all data
-	//go func(t_data domain.Examples, v_data domain.Examples) {
-	//	n.Neurals[len(n.Neurals)-1].Trainer.Train(n.Neurals[len(n.Neurals)-1].Model, t_data, v_data, iterations)
-	//	wg.Done()
-	//}(train_data, validate_date)
-
 	wg.Wait()
+
+	var deciderSamples domain.Examples
+
+	for _, sample := range train_data {
+		var s domain.Example
+		predictions := make([]float64, len(n.Neurals))
+		for i := 0; i < len(n.Neurals); i++ {
+			pred := n.Neurals[i].Model.Predict(sample.Input)
+			predictions = append(predictions, math.Round(pred[0]))
+		}
+		s.Input = predictions
+		s.Response = sample.Response
+		deciderSamples = append(deciderSamples, s)
+	}
+
+	// Evaluate the last neural with all data
+	n.Neurals[len(n.Neurals)-1].Trainer.Train(n.Neurals[len(n.Neurals)-1].Model, deciderSamples, deciderSamples, n.Neurals[len(n.Neurals)-1].Iterations)
 
 	return
 }

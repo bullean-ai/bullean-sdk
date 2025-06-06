@@ -18,15 +18,15 @@ type Trainer interface {
 // OnlineTrainer is a basic, online network trainer
 type OnlineTrainer struct {
 	*internal
-	solver     solver.Solver
-	printer    *StatsPrinter
-	verbosity  int
-	prevProfit float64
-	profit     float64
+	solver     solver.Solver `json:"solver"`
+	printer    *StatsPrinter `json:"printer"`
+	verbosity  int           `json:"verbosity"`
+	prevProfit float64       `json:"prev_profit"`
+	profit     float64       `json:"profit"`
 }
 
 // NewTrainer creates a new trainer
-func NewTrainer(solver solver.Solver, verbosity int) domain.ITrainer {
+func NewTrainer(solver solver.Solver, verbosity int) *OnlineTrainer {
 	return &OnlineTrainer{
 		solver:    solver,
 		printer:   NewStatsPrinter(),
