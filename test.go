@@ -24,7 +24,7 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 40000,
+			HistorySize: 20000,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -40,26 +40,24 @@ func main() {
 	var candless []domain.Candle
 	var examples ffnnDomain.Examples
 	isReady := false
-	ranger := 100
-
+	//inputLen := 400
+	ranger := 250
+	model1 := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
+	model2 := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
 	evaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
 		{
-			Model:   ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger)),
-			Trainer: ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1),
+			Model:   model1,
+			Trainer: ffnn.NewBatchTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1, ranger, 12),
 		},
 		{
-			Model:   ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger)),
-			Trainer: ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1),
-		},
-		{
-			Model:   ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger)),
-			Trainer: ffnn.NewTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1),
+			Model:   model2,
+			Trainer: ffnn.NewBatchTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1, ranger, 12),
 		},
 	})
 
 	client.OnReady(func(candles []domain.Candle) {
 
-		dataset := data.NewDataSet(candles)
+		dataset := data.NewDataSet(candles, 0)
 
 		dataset.CreatePolicy(domain.PolicyConfig{
 			FeatName:    "feature_per_change",
@@ -87,8 +85,11 @@ func main() {
 		candless = candles
 		//trainer := ffnn.NewBatchTrainer(solver.NewSGD(0.0005, 0.1, 0, true), 1, ranger, 12)
 
-		evaluator.Train(examples, examples, 20)
+		evaluator.Train(examples, examples, 100)
 		isReady = true
+
+		model1.SaveModel("./model1.json")
+		model2.SaveModel("./model2.json")
 
 	})
 
@@ -98,7 +99,7 @@ func main() {
 		for _, candle := range candles {
 			if candle.Symbol == "BNBUSDT" {
 				candless = append(candless, candle)
-				dataset := data.NewDataSet(candless)
+				dataset := data.NewDataSet(candless, 0)
 
 				dataset.CreatePolicy(domain.PolicyConfig{
 					FeatName:    "feature_per_change",

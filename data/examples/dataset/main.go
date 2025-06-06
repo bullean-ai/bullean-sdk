@@ -37,7 +37,7 @@ func main() {
 	neural := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
 	client.OnReady(func(candles []domain.Candle) {
 
-		dataset := data.NewDataSet(candles)
+		dataset := data.NewDataSet(candles, ranger)
 
 		dataset.CreatePolicy(domain.PolicyConfig{
 			FeatName:    "feature_per_change",
@@ -73,7 +73,7 @@ func main() {
 		for _, candle := range candles {
 			if candle.Symbol == "BNBUSDT" {
 				candless = append(candless, candle)
-				dataset := data.NewDataSet(candless)
+				dataset := data.NewDataSet(candless, ranger)
 
 				dataset.CreatePolicy(domain.PolicyConfig{
 					FeatName:    "feature_per_change",

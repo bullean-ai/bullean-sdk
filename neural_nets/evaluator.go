@@ -1,6 +1,7 @@
 package neural_nets
 
 import (
+	"fmt"
 	"github.com/bullean-ai/bullean-go/neural_nets/domain"
 	"math"
 	"sync"
@@ -19,9 +20,9 @@ func NewEvaluator(neurals []domain.Neural) *Evaluator {
 func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examples, iterations int) {
 	wg := &sync.WaitGroup{}
 
-	tAmount := len(train_data) / (len(n.Neurals) - 1)
-	vAmount := len(validate_date) / (len(n.Neurals) - 1)
-	for i := 0; i < len(n.Neurals)-1; i++ {
+	tAmount := len(train_data) / len(n.Neurals)
+	vAmount := len(validate_date) / len(n.Neurals)
+	for i := 0; i < len(n.Neurals); i++ {
 		t_truncated := train_data[i*tAmount : (i+1)*tAmount]
 		v_truncated := validate_date[i*vAmount : (i+1)*vAmount]
 		wg.Add(1)
@@ -31,12 +32,12 @@ func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examp
 		}(n.Neurals[i], t_truncated, v_truncated, i)
 	}
 
-	wg.Add(1)
+	//wg.Add(1)
 	// Evaluate the last neural with all data
-	go func(t_data domain.Examples, v_data domain.Examples) {
-		n.Neurals[len(n.Neurals)-1].Trainer.Train(n.Neurals[len(n.Neurals)-1].Model, t_data, v_data, iterations)
-		wg.Done()
-	}(train_data, validate_date)
+	//go func(t_data domain.Examples, v_data domain.Examples) {
+	//	n.Neurals[len(n.Neurals)-1].Trainer.Train(n.Neurals[len(n.Neurals)-1].Model, t_data, v_data, iterations)
+	//	wg.Done()
+	//}(train_data, validate_date)
 
 	wg.Wait()
 
@@ -45,7 +46,7 @@ func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examp
 
 func (n *Evaluator) Predict(input []float64) []float64 {
 	predictions := make([][]float64, len(n.Neurals))
-	lastChoice := []float64{}
+	var lastChoice []float64
 	buys := 0
 	sells := 0
 	for i := 0; i < len(n.Neurals); i++ {
@@ -60,6 +61,7 @@ func (n *Evaluator) Predict(input []float64) []float64 {
 
 	}
 
+	fmt.Println(predictions)
 	if buys > sells {
 		lastChoice = []float64{1, 0}
 	} else {

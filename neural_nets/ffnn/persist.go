@@ -2,7 +2,9 @@ package ffnn
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/bullean-ai/bullean-go/neural_nets/domain"
+	"os"
 )
 
 // Dump is a neurals network dump
@@ -56,6 +58,34 @@ func FromDump(dump *Dump) *FFNN {
 // Marshal marshals to JSON from network
 func (n *FFNN) Marshal() ([]byte, error) {
 	return json.Marshal(n.Dump())
+}
+
+func (n *FFNN) SaveModel(path string) error {
+	bytes, err := n.Marshal()
+	if err != nil {
+		fmt.Println("Error marshaling network:", err.Error())
+		return err
+	}
+	err = os.WriteFile(path, bytes, 0644)
+	if err != nil {
+		fmt.Println("Error writing to file:", err.Error())
+	}
+
+	return err
+}
+
+func LoadModel(path string) (ffnn *FFNN, err error) {
+	var bytes []byte
+	bytes, err = os.ReadFile(path)
+	if err != nil {
+		fmt.Println("Error writing to file:", err.Error())
+	}
+	ffnn, err = Unmarshal(bytes)
+	if err != nil {
+		fmt.Println("Error marshaling network:", err.Error())
+		return nil, err
+	}
+	return nil, err
 }
 
 // Unmarshal restores network from a JSON blob

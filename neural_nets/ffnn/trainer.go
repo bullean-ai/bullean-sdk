@@ -69,8 +69,8 @@ func (t *OnlineTrainer) Train(n interface{}, examples, validation domain.Example
 	t.solver.Init(neural.NumWeights())
 	accuracy := .0
 	ts := time.Now()
-	examples.Shuffle()
 	for i := 1; i <= iterations; i++ {
+		examples.Shuffle()
 		for j := 0; j < len(examples); j++ {
 			t.FeedForward(neural, examples[j])
 			t.BackPropagate(neural, examples[j], i)

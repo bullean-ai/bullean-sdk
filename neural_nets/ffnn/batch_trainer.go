@@ -1,6 +1,7 @@
 package ffnn
 
 import (
+	"fmt"
 	"github.com/bullean-ai/bullean-go/neural_nets/domain"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/solver"
@@ -62,8 +63,18 @@ func NewBatchTrainer(solver solver.Solver, verbosity, batchSize, parallelism int
 }
 
 // Train trains n
-func (t *BatchTrainer) Train(n *FFNN, examples, validation domain.Examples, iterations int) {
-	t.internalb = newBatchTraining(n.Layers, t.parallelism)
+func (t *BatchTrainer) Train(n interface{}, examples, validation domain.Examples, iterations int) (float64, domain.IModel) {
+	var neural *FFNN
+
+	switch n.(type) {
+	case *FFNN:
+		neural = n.(*FFNN)
+	default:
+		fmt.Println("Trainer can only train FFNN")
+		return 0, nil
+	}
+
+	t.internalb = newBatchTraining(neural.Layers, t.parallelism)
 
 	train := make(domain.Examples, len(examples))
 	copy(train, examples)
@@ -73,7 +84,7 @@ func (t *BatchTrainer) Train(n *FFNN, examples, validation domain.Examples, iter
 
 	wg := sync.WaitGroup{}
 	for i := 0; i < t.parallelism; i++ {
-		nets[i] = NewFFNN(n.Config)
+		nets[i] = NewFFNN(neural.Config)
 
 		go func(id int, workCh <-chan domain.Example) {
 			n := nets[id]
@@ -85,8 +96,8 @@ func (t *BatchTrainer) Train(n *FFNN, examples, validation domain.Examples, iter
 		}(i, workCh)
 	}
 
-	t.printer.Init(n)
-	t.solver.Init(n.NumWeights())
+	t.printer.Init(neural)
+	t.solver.Init(neural.NumWeights())
 
 	ts := time.Now()
 	for it := 1; it <= iterations; it++ {
@@ -94,7 +105,7 @@ func (t *BatchTrainer) Train(n *FFNN, examples, validation domain.Examples, iter
 		batches := train.SplitSize(t.batchSize)
 
 		for _, b := range batches {
-			currentWeights := n.Weights()
+			currentWeights := neural.Weights()
 			for _, n := range nets {
 				n.ApplyWeights(currentWeights)
 			}
@@ -118,14 +129,14 @@ func (t *BatchTrainer) Train(n *FFNN, examples, validation domain.Examples, iter
 				}
 			}
 
-			t.update(n, it)
+			t.update(neural, it)
 		}
 
 		if t.verbosity > 0 && it%t.verbosity == 0 && len(validation) > 0 {
-			t.printer.PrintProgress(n, validation, time.Since(ts), it)
+			t.printer.PrintProgress(neural, validation, time.Since(ts), it)
 		}
 	}
-
+	return 0, neural
 }
 
 func (t *BatchTrainer) calculateDeltas(n *FFNN, ideal []float64, wid int) {

@@ -11,9 +11,9 @@ func ClosePercentagePolicy(candles []domain.Candle) int {
 		}
 		perChange += ((candles[i].Close - candles[i-1].Close) / candles[i-1].Close) * 100
 	}
-	if perChange > 0.3 {
+	if perChange > .4 {
 		return 1
-	} else if perChange < 0.3 && perChange >= 0.3 {
+	} else if perChange < .4 && perChange >= .4 {
 		return 0
 	} else {
 		return 2
