@@ -42,9 +42,9 @@ func main() {
 	var willTrain = true
 	isReady := false
 	//inputLen := 300
-	ranger := 30
-	iterations := 200
-	lr := 0.005
+	ranger := 40
+	iterations := 400
+	lr := 0.007
 	var model1 *ffnn.FFNN
 	//var err error
 
