@@ -24,7 +24,7 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 10000,
+			HistorySize: 6000,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -39,42 +39,52 @@ func main() {
 	})
 	var candless []domain.Candle
 	var examples ffnnDomain.Examples
-	var willTrain bool
+	var willTrain = true
 	isReady := false
-	inputLen := 1000
-	ranger := 20
-	var model1, model2 *ffnn.FFNN
-	var err error
+	//inputLen := 300
+	ranger := 75
+	iterations := 300
+	lr := 0.005
+	var model1 *ffnn.FFNN
+	//var err error
 
-	model1, err = ffnn.LoadModel("./model1.json")
-	if err != nil {
-		model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
-		willTrain = true
-	}
-	model2, err = ffnn.LoadModel("./model2.json")
-	if err != nil {
-		model2 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
-		willTrain = true
-	}
+	model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
+
+	/*
+		model1, err = ffnn.LoadModel("./model1.json")
+			if err != nil {
+			 		model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
+				willTrain = true
+			}
+			model2, err = ffnn.LoadModel("./model2.json")
+			if err != nil {
+				model2 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
+				willTrain = true
+			}
+	*/
 	evaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
 		{
 			Model:      model1,
-			Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(0.002, 0, 0, 1e-12), 1, ranger, 12),
-			Iterations: 500,
+			Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
+			Iterations: iterations,
 		},
 	})
 
 	client.OnReady(func(candles []domain.Candle) {
 
-		dataset := data.NewDataSet(candles, inputLen)
+		dataset := data.NewDataSet(candles, ranger)
 
 		dataset.CreatePolicy(domain.PolicyConfig{
 			FeatName:    "feature_per_change",
 			FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
 			PolicyRange: ranger,
 		}, data.ClosePercentagePolicy)
+		dataset.SerializeLabels()
 
 		dataFrame := dataset.GetDataSet()
+		for _, dat := range dataFrame {
+			fmt.Println(dat.Label)
+		}
 
 		for i := 0; i < len(dataFrame); i++ {
 			label := []float64{}
@@ -96,7 +106,6 @@ func main() {
 		if willTrain == true {
 			evaluator.Train(examples, examples)
 			model1.SaveModel("./model1.json")
-			model2.SaveModel("./model2.json")
 
 		}
 		isReady = true
@@ -104,20 +113,24 @@ func main() {
 	})
 
 	lastprediction := 0
+	isTrainingEnd := true
 	client.OnCandle(func(candles []domain.Candle) {
 		var prediction int
 		for _, candle := range candles {
 			if candle.Symbol == "BNBUSDT" {
 				candless = candless[1:]
 				candless = append(candless, candle)
-				dataset := data.NewDataSet(candless, inputLen)
+				if isReady == false {
+					continue
+				}
+				dataset := data.NewDataSet(candless, ranger)
 
 				dataset.CreatePolicy(domain.PolicyConfig{
 					FeatName:    "feature_per_change",
 					FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
 					PolicyRange: ranger,
 				}, data.ClosePercentagePolicy)
-
+				dataset.SerializeLabels()
 				dataFrame := dataset.GetDataSet()
 
 				for i := ranger; i < len(dataFrame); i++ {
@@ -135,6 +148,34 @@ func main() {
 						Response: label,
 					})
 				}
+
+				go func() {
+					if isTrainingEnd {
+						isTrainingEnd = false
+						model2 := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
+						newEvaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
+							{
+								Model:      model2,
+								Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
+								Iterations: iterations,
+							},
+						})
+						newEvaluator.Train(examples, examples)
+						model1.SaveModel("./model1.json")
+						model2.SaveModel("./model2.json")
+						*model1 = *model2
+						newEvaluator = neural_nets.NewEvaluator([]ffnnDomain.Neural{
+							{
+								Model:      model1,
+								Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
+								Iterations: iterations,
+							},
+						})
+						evaluator = newEvaluator
+						isTrainingEnd = true
+					}
+				}()
+
 				pred := evaluator.Predict(examples[len(examples)-1].Input)
 				buy := math.Round(pred[0])
 				if buy == 1 {
@@ -144,9 +185,6 @@ func main() {
 				}
 
 				fmt.Println(pred)
-				if isReady == false {
-					continue
-				}
 
 				if prediction == 1 && lastprediction == 1 {
 					binanceClient.Buy(binanceDomain.BuyInfo{

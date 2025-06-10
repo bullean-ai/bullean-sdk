@@ -30,12 +30,15 @@ func NewBinanceSpotClient(config domain.BinanceClientConfig) domain.IBinanceClie
 		lastOrder:    nil,
 		lastPosition: -1,
 	}
+
 }
 
 func (b *binanceSpotClient) Buy(req_dat domain.BuyInfo) {
 	var balance float64
 	var err error
-
+	if b.client == nil {
+		return
+	}
 	// Cancel Order
 	if b.lastOrder != nil {
 		_, err = b.client.NewCancelOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
@@ -54,9 +57,8 @@ func (b *binanceSpotClient) Buy(req_dat domain.BuyInfo) {
 			}
 		}
 		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
-			Side(binance.SideTypeBuy).Type(binance.OrderTypeLimit).
-			TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown((balance/req_dat.Price)*99.9/100, 2))).
-			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
+			Side(binance.SideTypeBuy).Type(binance.OrderTypeMarket).Quantity(fmt.Sprintf("%.3f", RoundDown((balance/req_dat.Price)*99.9/100, 3))).
+			Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -72,6 +74,9 @@ func (b *binanceSpotClient) Buy(req_dat domain.BuyInfo) {
 func (b *binanceSpotClient) Sell(req_dat domain.SellInfo) {
 	var balance float64
 	var err error
+	if b.client == nil {
+		return
+	}
 	account, _ := b.client.NewGetAccountService().Do(context.Background())
 	if account != nil {
 		for _, bl := range account.Balances {
@@ -82,9 +87,8 @@ func (b *binanceSpotClient) Sell(req_dat domain.SellInfo) {
 			}
 		}
 		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
-			Side(binance.SideTypeSell).Type(binance.OrderTypeLimit).
-			TimeInForce(binance.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown(balance*99.9/100, 2))).
-			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
+			Side(binance.SideTypeSell).Type(binance.OrderTypeMarket).Quantity(fmt.Sprintf("%.3f", RoundDown(balance*99.9/100, 3))).
+			Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return

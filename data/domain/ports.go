@@ -8,4 +8,5 @@ type IClient interface {
 type IDataSet interface {
 	CreatePolicy(PolicyConfig, func([]Candle) int)
 	GetDataSet() []Data
+	SerializeLabels()
 }

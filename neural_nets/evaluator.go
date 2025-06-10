@@ -19,10 +19,16 @@ func NewEvaluator(neurals []domain.Neural) *Evaluator {
 
 func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examples) {
 	wg := &sync.WaitGroup{}
+	var neuralCount int
+	if len(n.Neurals) > 3 {
+		neuralCount = len(n.Neurals) - 1
+	} else {
+		neuralCount = len(n.Neurals)
+	}
 
-	tAmount := len(train_data) / len(n.Neurals)
-	vAmount := len(validate_date) / len(n.Neurals)
-	for i := 0; i < len(n.Neurals); i++ {
+	tAmount := len(train_data) / neuralCount
+	vAmount := len(validate_date) / neuralCount
+	for i := 0; i < neuralCount; i++ {
 		t_truncated := train_data[i*tAmount : (i+1)*tAmount]
 		v_truncated := validate_date[i*vAmount : (i+1)*vAmount]
 		wg.Add(1)
@@ -33,24 +39,25 @@ func (n *Evaluator) Train(train_data domain.Examples, validate_date domain.Examp
 	}
 
 	wg.Wait()
+	/*if len(n.Neurals) > 1 {
+		var deciderSamples domain.Examples
 
-	var deciderSamples domain.Examples
-
-	for _, sample := range train_data {
-		var s domain.Example
-		predictions := make([]float64, len(n.Neurals))
-		for i := 0; i < len(n.Neurals); i++ {
-			pred := n.Neurals[i].Model.Predict(sample.Input)
-			predictions = append(predictions, math.Round(pred[0]))
+		for _, sample := range train_data {
+			var s domain.Example
+			predictions := make([]float64, len(n.Neurals))
+			for i := 0; i < len(n.Neurals); i++ {
+				pred := n.Neurals[i].Model.Predict(sample.Input)
+				predictions = append(predictions, math.Round(pred[0]))
+			}
+			s.Input = predictions
+			s.Response = sample.Response
+			deciderSamples = append(deciderSamples, s)
 		}
-		s.Input = predictions
-		s.Response = sample.Response
-		deciderSamples = append(deciderSamples, s)
+
+		// Evaluate the last neural with all data
+		n.Neurals[len(n.Neurals)-1].Trainer.Train(n.Neurals[len(n.Neurals)-1].Model, deciderSamples, deciderSamples, n.Neurals[len(n.Neurals)-1].Iterations)
 	}
-
-	// Evaluate the last neural with all data
-	n.Neurals[len(n.Neurals)-1].Trainer.Train(n.Neurals[len(n.Neurals)-1].Model, deciderSamples, deciderSamples, n.Neurals[len(n.Neurals)-1].Iterations)
-
+	*/
 	return
 }
 

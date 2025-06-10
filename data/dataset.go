@@ -18,13 +18,13 @@ func NewDataSet(candles []domain.Candle, input_len int) domain.IDataSet {
 // CreatePolicy Policy is created by the callback function.
 // 0)Hold 1)Buy 2)Sell
 func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.Candle) int) {
-	for i := len(d.Candles) - config.PolicyRange; i >= d.InputLen+1; i-- {
+	for i := len(d.Candles) - config.PolicyRange; i >= 1; i-- {
 		var data domain.Data
-		signal := policy(d.Candles[i : i+config.PolicyRange])
+		signal := policy(d.Candles[i-1 : i+config.PolicyRange])
 		if d.InputLen > 0 {
 			data = domain.Data{
 				Name:     config.FeatName,
-				Features: d.GetFeatureValues(d.Candles[i-d.InputLen:i], config.FeatType),
+				Features: d.GetFeatureValues(d.Candles[i-1:i+config.PolicyRange], config.FeatType),
 				Label:    signal,
 			}
 		} else {
@@ -36,6 +36,17 @@ func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.
 		}
 
 		d.Features = append([]domain.Data{data}, d.Features...)
+	}
+}
+
+func (d *dataSet) SerializeLabels() {
+	lastSignal := -1
+	for i := 0; i < len(d.Features)-4; i++ {
+
+		if lastSignal != d.Features[i].Label && d.Features[i+1].Label != lastSignal && d.Features[i+3].Label != lastSignal && d.Features[i+4].Label != lastSignal {
+			lastSignal = d.Features[i].Label
+		}
+		d.Features[i].Label = lastSignal
 	}
 }
 

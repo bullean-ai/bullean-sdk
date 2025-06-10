@@ -85,7 +85,7 @@ func LoadModel(path string) (ffnn *FFNN, err error) {
 		fmt.Println("Error marshaling network:", err.Error())
 		return nil, err
 	}
-	return nil, err
+	return ffnn, err
 }
 
 // Unmarshal restores network from a JSON blob
