@@ -68,7 +68,6 @@ func (b *binanceSpotClient) Buy(req_dat domain.BuyInfo) {
 	}
 
 	b.lastPosition = 1
-
 }
 
 func (b *binanceSpotClient) Sell(req_dat domain.SellInfo) {
@@ -97,5 +96,18 @@ func (b *binanceSpotClient) Sell(req_dat domain.SellInfo) {
 	} else {
 		fmt.Println("Account hatası")
 	}
+}
 
+func (b *binanceSpotClient) GetSymbolBalance(asset string) (balance float64) {
+	account, _ := b.client.NewGetAccountService().Do(context.Background())
+	if account != nil {
+		for _, bl := range account.Balances {
+			if bl.Asset == asset {
+				balance = ToFloat(bl.Free)
+				break
+			}
+		}
+	}
+
+	return
 }

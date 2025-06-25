@@ -8,8 +8,8 @@ import (
 var DefaultFFNNConfig = func(input_len int) *Config {
 	return &Config{
 		Inputs:     input_len + 1,
-		Layout:     []int{30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 2},
-		Activation: ActivationSigmoid,
+		Layout:     []int{150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 3},
+		Activation: ActivationSoftmax,
 		Mode:       ModeMultiClass,
 		Weight:     synapse.NewNormal(1e-20, 1e-20),
 		Bias:       true,

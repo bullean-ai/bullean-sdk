@@ -16,7 +16,8 @@ type BuyInfo struct {
 }
 
 type SellInfo struct {
-	BaseAsset  string  `json:"BaseAsset"`
-	QuoteAsset string  `json:"QuoteAsset"`
-	Price      float64 `json:"price"`
+	BaseAsset    string  `json:"BaseAsset"`
+	QuoteAsset   string  `json:"QuoteAsset"`
+	Price        float64 `json:"price"`
+	PositionSide int     `json:"position_side"`
 }

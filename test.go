@@ -11,10 +11,15 @@ import (
 	ffnnDomain "github.com/bullean-ai/bullean-go/neural_nets/domain"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/solver"
+	"github.com/bullean-ai/bullean-go/strategies"
+	domain2 "github.com/bullean-ai/bullean-go/strategies/domain"
 	"math"
 )
 
 func main() {
+
+	quoteAsset := "BNB"
+	baseAsset := "USDT"
 
 	client := data.NewClient(domain.ClientConfig{
 		Version:   domain.V1,
@@ -24,43 +29,47 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 6000,
+			HistorySize: 3000,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
-					Value: "BNBUSDT",
+					Value: fmt.Sprintf("%s%s", quoteAsset, baseAsset),
 				},
 			},
 		},
 	})
-	binanceClient := binance.NewBinanceSpotClient(binanceDomain.BinanceClientConfig{
+	binanceClient := binance.NewBinanceFuturesClient(binanceDomain.BinanceClientConfig{
 		ApiKey:    "xsCifNydCadBpp4gmL3TJGmNlNWt6nkKTfdhOmEmFqM8WqPqyXBAoDk97YviHorI",
 		ApiSecret: "6KgbU2UNZ8rdjhkOLNf1QWJ3c941sTbkaouf0TJ0OSAiFkIqpq4n8MWUKeQCE7st",
 	})
+	strategy := strategies.NewStrategy(baseAsset, []string{quoteAsset}, 40, binanceClient)
 	var candless []domain.Candle
 	var examples ffnnDomain.Examples
 	var willTrain = true
 	isReady := false
 	//inputLen := 300
-	ranger := 40
-	iterations := 400
-	lr := 0.007
+	ranger := 60
+	iterations := 100
+	lr := 0.005
 	var model1 *ffnn.FFNN
 	//var err error
 
 	model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
-
 	/*
 		model1, err = ffnn.LoadModel("./model1.json")
-			if err != nil {
-			 		model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
-				willTrain = true
-			}
-			model2, err = ffnn.LoadModel("./model2.json")
-			if err != nil {
-				model2 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
-				willTrain = true
-			}
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+			model1, err = ffnn.LoadModel("./model1.json")
+				if err != nil {
+				 		model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
+					willTrain = true
+				}
+				model2, err = ffnn.LoadModel("./model2.json")
+				if err != nil {
+					model2 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
+					willTrain = true
+				}
 	*/
 	evaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
 		{
@@ -89,12 +98,12 @@ func main() {
 		for i := 0; i < len(dataFrame); i++ {
 			label := []float64{}
 			if dataFrame[i].Label == 1 {
-				label = []float64{1, 0}
+				label = []float64{1, 0, 0}
 			} else if dataFrame[i].Label == 2 {
-				label = []float64{0, 1}
+				label = []float64{0, 1, 0}
 
 			} else {
-				label = []float64{0, 1}
+				label = []float64{0, 0, 1}
 			}
 			examples = append(examples, ffnnDomain.Example{
 				Input:    dataFrame[i].Features,
@@ -113,7 +122,7 @@ func main() {
 	})
 
 	lastprediction := 0
-	isTrainingEnd := true
+	//isTrainingEnd := true
 	client.OnCandle(func(candles []domain.Candle) {
 		var prediction int
 		for _, candle := range candles {
@@ -136,12 +145,12 @@ func main() {
 				for i := ranger; i < len(dataFrame); i++ {
 					label := []float64{}
 					if dataFrame[i].Label == 1 {
-						label = []float64{1, 0}
+						label = []float64{1, 0, 0}
 					} else if dataFrame[i].Label == 2 {
-						label = []float64{0, 1}
+						label = []float64{0, 1, 0}
 
 					} else {
-						label = []float64{0, 1}
+						label = []float64{0, 0, 0}
 					}
 					examples = append(examples, ffnnDomain.Example{
 						Input:    dataFrame[i].Features,
@@ -149,56 +158,72 @@ func main() {
 					})
 				}
 
-				go func() {
-					if isTrainingEnd {
-						isTrainingEnd = false
-						model2 := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
-						newEvaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
-							{
-								Model:      model2,
-								Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
-								Iterations: iterations,
-							},
-						})
-						newEvaluator.Train(examples, examples)
-						model1.SaveModel("./model1.json")
-						model2.SaveModel("./model2.json")
-						*model1 = *model2
-						newEvaluator = neural_nets.NewEvaluator([]ffnnDomain.Neural{
-							{
-								Model:      model1,
-								Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
-								Iterations: iterations,
-							},
-						})
-						evaluator = newEvaluator
-						isTrainingEnd = true
-					}
-				}()
+				/*
+					go func() {
+						if isTrainingEnd {
+							isTrainingEnd = false
+							model2 := ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
+							newEvaluator := neural_nets.NewEvaluator([]ffnnDomain.Neural{
+								{
+									Model:      model2,
+									Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
+									Iterations: iterations,
+								},
+							})
+							newEvaluator.Train(examples, examples)
+							model1.SaveModel("./model1.json")
+							model2.SaveModel("./model2.json")
+							*model1 = *model2
+							newEvaluator = neural_nets.NewEvaluator([]ffnnDomain.Neural{
+								{
+									Model:      model1,
+									Trainer:    ffnn.NewBatchTrainer(solver.NewAdam(lr, 0, 0, 1e-12), 1, 100, 12),
+									Iterations: iterations,
+								},
+							})
+							evaluator = newEvaluator
+							isTrainingEnd = true
+						}
+					}()
+				*/
 
 				pred := evaluator.Predict(examples[len(examples)-1].Input)
 				buy := math.Round(pred[0])
+				sell := math.Round(pred[1])
+				hold := math.Round(pred[2])
 				if buy == 1 {
 					prediction = 1
-				} else {
+				} else if sell == 1 {
 					prediction = -1
+				} else if hold == 1 {
+					prediction = 0
 				}
 
 				fmt.Println(pred)
 
-				if prediction == 1 && lastprediction == 1 {
-					binanceClient.Buy(binanceDomain.BuyInfo{
-						Price:      candle.Close,
-						QuoteAsset: "BNB",
-						BaseAsset:  "USDC",
-					})
-				} else if prediction == -1 && lastprediction == -1 {
-					binanceClient.Sell(binanceDomain.SellInfo{
-						Price:      candle.Close,
-						QuoteAsset: "BNB",
-						BaseAsset:  "USDC",
-					})
-				}
+				strategy.Next(candles)
+				strategy.Evaluate(func(lastLongEnterPrice, lastLongClosePrice float64) domain2.PositionType { // Long Enter
+
+					if domain2.PercentageChange(lastLongEnterPrice, candle.Close) > 0.05 && prediction == 1 && lastprediction == 1 {
+						return domain2.POS_BUY
+					} else if (domain2.PercentageChange(lastLongClosePrice, candle.Close) < 0.05 || domain2.PercentageChange(lastLongEnterPrice, candle.Close) > 0.1) && prediction == 1 && lastprediction == 1 {
+						return domain2.POS_SELL
+					} else {
+						return domain2.POS_HOLD
+					}
+
+				}, func(lastShortEnterPrice, lastShortClosePrice float64) domain2.PositionType { // Short Enter
+					if lastShortEnterPrice == 0 {
+						lastShortEnterPrice = candle.Close
+					}
+					if domain2.PercentageChange(lastShortEnterPrice, candle.Close) < 0.05 && prediction == -1 && lastprediction == -1 {
+						return domain2.POS_BUY
+					} else if (domain2.PercentageChange(lastShortClosePrice, candle.Close) > 0.05 || domain2.PercentageChange(lastShortEnterPrice, candle.Close) < 0.1) && prediction == -1 && lastprediction == -1 {
+						return domain2.POS_SELL
+					} else {
+						return domain2.POS_HOLD
+					}
+				})
 
 				lastprediction = prediction
 			}

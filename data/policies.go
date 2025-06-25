@@ -15,7 +15,7 @@ func ClosePercentagePolicy(candles []domain.Candle) int {
 	}
 	if perChange > .5 {
 		return 1
-	} else if perChange < .5 && perChange >= .5 {
+	} else if perChange < .5 && perChange >= 0 {
 		return 0
 	} else {
 		return 2

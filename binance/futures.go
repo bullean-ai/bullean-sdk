@@ -55,9 +55,22 @@ func (b *binanceFuturesClient) Buy(req_dat domain.BuyInfo) {
 				fmt.Println(ToFloat(bl.AvailableBalance))
 			}
 		}
-		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
-			Side(futures.SideTypeBuy).Type(futures.OrderTypeLimit).
-			TimeInForce(futures.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown((balance/req_dat.Price)*99.9/100, 2))).
+		var posType futures.SideType
+		var posSide futures.PositionSideType
+		switch req_dat.PositionSide {
+		case 1:
+			posType = futures.SideTypeBuy
+			posSide = futures.PositionSideTypeLong
+		case 2:
+			posType = futures.SideTypeSell
+			posSide = futures.PositionSideTypeShort
+		default:
+			return
+		}
+		quantity := (balance / req_dat.Price) * 99.9 / 100
+		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).PositionSide(posSide).
+			Side(posType).Type(futures.OrderTypeLimit).
+			TimeInForce(futures.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown(quantity, 2))).
 			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
@@ -68,7 +81,6 @@ func (b *binanceFuturesClient) Buy(req_dat domain.BuyInfo) {
 	}
 
 	b.lastPosition = 1
-
 }
 
 func (b *binanceFuturesClient) Sell(req_dat domain.SellInfo) {
@@ -83,10 +95,20 @@ func (b *binanceFuturesClient) Sell(req_dat domain.SellInfo) {
 				fmt.Println(fmt.Sprintf("%.5f", f))
 			}
 		}
-		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).
-			Side(futures.SideTypeSell).Type(futures.OrderTypeLimit).
-			TimeInForce(futures.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown(balance*99.9/100, 2))).
-			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
+		var posType futures.SideType
+		var posSide futures.PositionSideType
+		switch req_dat.PositionSide {
+		case 1:
+			posType = futures.SideTypeBuy
+			posSide = futures.PositionSideTypeLong
+		case 2:
+			posType = futures.SideTypeSell
+			posSide = futures.PositionSideTypeShort
+		default:
+			return
+		}
+		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).PositionSide(posSide).
+			Side(posType).Type(futures.OrderTypeMarket).Quantity(fmt.Sprintf("%.2f", RoundDown(balance*req_dat.Price*99/100, 2))).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -95,5 +117,17 @@ func (b *binanceFuturesClient) Sell(req_dat domain.SellInfo) {
 	} else {
 		fmt.Println("Account hatası")
 	}
+}
+func (b *binanceFuturesClient) GetSymbolBalance(asset string) (balance float64) {
+	account, _ := b.client.NewGetAccountService().Do(context.Background())
+	if account != nil {
+		for _, bl := range account.Assets {
+			if bl.Asset == asset {
+				balance = ToFloat(bl.AvailableBalance)
+				break
+			}
+		}
+	}
 
+	return
 }
