@@ -66,23 +66,29 @@ func (n *Evaluator) Predict(input []float64) []float64 {
 	var lastChoice []float64
 	buys := 0
 	sells := 0
+	holds := 0
 	for i := 0; i < len(n.Neurals); i++ {
 		predictions = append(predictions, n.Neurals[i].Model.Predict(input))
 		pred := n.Neurals[i].Model.Predict(input)
 		buy := math.Round(pred[0])
+		sell := math.Round(pred[1])
 		if buy == 1 {
 			buys += 1
-		} else {
+		} else if sell == 1 {
 			sells += 1
+		} else {
+			holds += 1
 		}
 
 	}
 
 	fmt.Println(predictions)
-	if buys > sells {
-		lastChoice = []float64{1, 0}
+	if buys > sells && buys > holds {
+		lastChoice = []float64{1, 0, 0}
+	} else if sells > buys && sells > holds {
+		lastChoice = []float64{0, 1, 0}
 	} else {
-		lastChoice = []float64{0, 1}
+		lastChoice = []float64{0, 0, 1}
 	}
 
 	return lastChoice
