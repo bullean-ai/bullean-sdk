@@ -18,7 +18,7 @@ import (
 
 func main() {
 
-	quoteAsset := "BNB"
+	quoteAsset := "XRP"
 	baseAsset := "USDT"
 
 	client := data.NewClient(domain.ClientConfig{
@@ -47,10 +47,10 @@ func main() {
 	var examples ffnnDomain.Examples
 	var willTrain = true
 	isReady := false
-	//inputLen := 300
-	ranger := 60
-	iterations := 100
-	lr := 0.005
+	//inputLen := 1000
+	ranger := 40
+	iterations := 50
+	lr := 0.003
 	var model1 *ffnn.FFNN
 	//var err error
 
@@ -126,7 +126,7 @@ func main() {
 	client.OnCandle(func(candles []domain.Candle) {
 		var prediction int
 		for _, candle := range candles {
-			if candle.Symbol == "BNBUSDT" {
+			if candle.Symbol == "XRPUSDT" {
 				candless = candless[1:]
 				candless = append(candless, candle)
 				if isReady == false {
@@ -142,7 +142,7 @@ func main() {
 				dataset.SerializeLabels()
 				dataFrame := dataset.GetDataSet()
 
-				for i := ranger; i < len(dataFrame); i++ {
+				for i := 0; i < len(dataFrame); i++ {
 					label := []float64{}
 					if dataFrame[i].Label == 1 {
 						label = []float64{1, 0, 0}

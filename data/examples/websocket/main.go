@@ -24,7 +24,7 @@ func main() {
 				},
 				{
 					Key:   "kline",
-					Value: "BNBUSDT",
+					Value: "XRPUSDT",
 				},
 			},
 		},

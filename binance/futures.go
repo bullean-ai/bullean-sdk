@@ -70,7 +70,7 @@ func (b *binanceFuturesClient) Buy(req_dat domain.BuyInfo) {
 		quantity := (balance / req_dat.Price) * 99.9 / 100
 		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).PositionSide(posSide).
 			Side(posType).Type(futures.OrderTypeLimit).
-			TimeInForce(futures.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.2f", RoundDown(quantity, 2))).
+			TimeInForce(futures.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.4f", RoundDown(quantity, 2))).
 			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "apexcharts": "^4.7.0",
+    "dayjs": "^1.11.13",
+    "echarts": "^5.6.0",
+    "highcharts": "^12.3.0"
+  }
+}

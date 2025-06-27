@@ -30,7 +30,7 @@ func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.
 		} else {
 			data = domain.Data{
 				Name:     config.FeatName,
-				Features: d.GetFeatureValues(d.Candles[i:i+config.PolicyRange], config.FeatType),
+				Features: d.GetFeatureValues(d.Candles[i-1:i+config.PolicyRange], config.FeatType),
 				Label:    signal,
 			}
 		}

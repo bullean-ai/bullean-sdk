@@ -24,7 +24,7 @@ func main() {
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
-					Value: "BNBUSDT",
+					Value: "XRPUSDT",
 				},
 			},
 		},
@@ -71,7 +71,7 @@ func main() {
 
 	client.OnCandle(func(candles []domain.Candle) {
 		for _, candle := range candles {
-			if candle.Symbol == "BNBUSDT" {
+			if candle.Symbol == "XRPUSDT" {
 				candless = append(candless, candle)
 				dataset := data.NewDataSet(candless, ranger)
 
