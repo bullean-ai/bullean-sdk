@@ -7,7 +7,7 @@ const HISTORY_LIMIT = 40000
 type ClientVersion string
 
 const (
-	V1 ClientVersion = "localhost:5067"
+	V1 ClientVersion = "152.89.38.10:5067"
 )
 
 type FeatureType int
