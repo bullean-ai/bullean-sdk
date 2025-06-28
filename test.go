@@ -7,6 +7,7 @@ import (
 	binanceDomain "github.com/bullean-ai/bullean-go/binance/domain"
 	"github.com/bullean-ai/bullean-go/data"
 	"github.com/bullean-ai/bullean-go/data/domain"
+	"github.com/bullean-ai/bullean-go/indicators"
 	"github.com/bullean-ai/bullean-go/neural_nets"
 	ffnnDomain "github.com/bullean-ai/bullean-go/neural_nets/domain"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn"
@@ -29,7 +30,7 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 3000,
+			HistorySize: 1500,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -47,10 +48,10 @@ func main() {
 	var examples ffnnDomain.Examples
 	var willTrain = true
 	isReady := false
-	//inputLen := 1000
+	//inputLen := 200
 	ranger := 40
-	iterations := 50
-	lr := 0.003
+	iterations := 40
+	lr := 0.004
 	var model1 *ffnn.FFNN
 	//var err error
 
@@ -199,14 +200,20 @@ func main() {
 					prediction = 0
 				}
 
-				fmt.Println(pred)
-
+				fmt.Println(pred, len(candless[len(candless)-16:]))
+				emaOuts := indicators.EMA(candless[len(candless)-16:], 6)
+				changedir := 0
+				if domain2.PercentageChange(emaOuts[1], emaOuts[len(emaOuts)-1]) > 0 {
+					changedir = 1
+				} else if domain2.PercentageChange(emaOuts[1], emaOuts[len(emaOuts)-1]) < 0 {
+					changedir = -1
+				}
 				strategy.Next(candles)
 				strategy.Evaluate(func(lastLongEnterPrice, lastLongClosePrice float64) domain2.PositionType { // Long Enter
-
-					if domain2.PercentageChange(lastLongEnterPrice, candle.Close) > 0.05 && prediction == 1 && lastprediction == 1 {
+					fmt.Println("LONG: ", lastLongEnterPrice, lastLongClosePrice, domain2.PercentageChange(lastLongEnterPrice, candle.Close))
+					if prediction == 1 && lastprediction == 1 {
 						return domain2.POS_BUY
-					} else if (domain2.PercentageChange(lastLongClosePrice, candle.Close) < 0.05 || domain2.PercentageChange(lastLongEnterPrice, candle.Close) > 0.1) && prediction == 1 && lastprediction == 1 {
+					} else if (prediction == 1 && lastprediction == 1) || changedir == -1 {
 						return domain2.POS_SELL
 					} else {
 						return domain2.POS_HOLD
@@ -216,9 +223,10 @@ func main() {
 					if lastShortEnterPrice == 0 {
 						lastShortEnterPrice = candle.Close
 					}
-					if domain2.PercentageChange(lastShortEnterPrice, candle.Close) < 0.05 && prediction == -1 && lastprediction == -1 {
+					fmt.Println("SHORT: ", lastShortEnterPrice, lastShortClosePrice, domain2.PercentageChange(lastShortEnterPrice, candle.Close))
+					if prediction == -1 && lastprediction == -1 {
 						return domain2.POS_BUY
-					} else if (domain2.PercentageChange(lastShortClosePrice, candle.Close) > 0.05 || domain2.PercentageChange(lastShortEnterPrice, candle.Close) < 0.1) && prediction == -1 && lastprediction == -1 {
+					} else if (prediction == -1 && lastprediction == -1) || changedir == 1 {
 						return domain2.POS_SELL
 					} else {
 						return domain2.POS_HOLD
