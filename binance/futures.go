@@ -71,7 +71,7 @@ func (b *binanceFuturesClient) Buy(req_dat domain.BuyInfo) {
 		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).PositionSide(posSide).
 			Side(posType).Type(futures.OrderTypeLimit).
 			TimeInForce(futures.TimeInForceTypeGTC).Quantity(fmt.Sprintf("%.4f", RoundDown(quantity, 2))).
-			Price(fmt.Sprintf("%.2f", req_dat.Price)).Do(context.Background())
+			Price(fmt.Sprintf("%.4f", req_dat.Price)).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return
@@ -108,7 +108,7 @@ func (b *binanceFuturesClient) Sell(req_dat domain.SellInfo) {
 			return
 		}
 		b.lastOrder, err = b.client.NewCreateOrderService().Symbol(fmt.Sprintf("%s%s", req_dat.QuoteAsset, req_dat.BaseAsset)).PositionSide(posSide).
-			Side(posType).Type(futures.OrderTypeMarket).Quantity(fmt.Sprintf("%.2f", RoundDown(balance*req_dat.Price*99/100, 2))).Do(context.Background())
+			Side(posType).Type(futures.OrderTypeMarket).Quantity(fmt.Sprintf("%.4f", RoundDown(balance*req_dat.Price*99/100, 2))).Do(context.Background())
 		if err != nil {
 			fmt.Println(err.Error())
 			return

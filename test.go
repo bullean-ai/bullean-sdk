@@ -30,7 +30,7 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 1500,
+			HistorySize: 3100,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -48,14 +48,14 @@ func main() {
 	var examples ffnnDomain.Examples
 	var willTrain = true
 	isReady := false
-	//inputLen := 200
-	ranger := 40
-	iterations := 40
+	inputLen := 1500
+	ranger := 30
+	iterations := 30
 	lr := 0.004
 	var model1 *ffnn.FFNN
 	//var err error
 
-	model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(ranger))
+	model1 = ffnn.NewFFNN(ffnnDomain.DefaultFFNNConfig(inputLen))
 	/*
 		model1, err = ffnn.LoadModel("./model1.json")
 		if err != nil {
@@ -82,13 +82,13 @@ func main() {
 
 	client.OnReady(func(candles []domain.Candle) {
 
-		dataset := data.NewDataSet(candles, ranger)
+		dataset := data.NewDataSet(candles, inputLen)
 
 		dataset.CreatePolicy(domain.PolicyConfig{
 			FeatName:    "feature_per_change",
 			FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
 			PolicyRange: ranger,
-		}, data.ClosePercentagePolicy)
+		}, data.MAPercentagePolicy)
 		dataset.SerializeLabels()
 
 		dataFrame := dataset.GetDataSet()
@@ -133,13 +133,13 @@ func main() {
 				if isReady == false {
 					continue
 				}
-				dataset := data.NewDataSet(candless, ranger)
+				dataset := data.NewDataSet(candless, inputLen)
 
 				dataset.CreatePolicy(domain.PolicyConfig{
 					FeatName:    "feature_per_change",
 					FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
 					PolicyRange: ranger,
-				}, data.ClosePercentagePolicy)
+				}, data.MAPercentagePolicy)
 				dataset.SerializeLabels()
 				dataFrame := dataset.GetDataSet()
 

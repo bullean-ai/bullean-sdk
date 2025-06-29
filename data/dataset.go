@@ -18,19 +18,19 @@ func NewDataSet(candles []domain.Candle, input_len int) domain.IDataSet {
 // CreatePolicy Policy is created by the callback function.
 // 0)Hold 1)Buy 2)Sell
 func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.Candle) int) {
-	for i := len(d.Candles) - config.PolicyRange; i >= 1; i-- {
+	for i := len(d.Candles) - config.PolicyRange; i >= 1+d.InputLen; i-- {
 		var data domain.Data
-		signal := policy(d.Candles[i-1 : i+config.PolicyRange])
+		signal := policy(d.Candles[i-10 : i+config.PolicyRange])
 		if d.InputLen > 0 {
 			data = domain.Data{
 				Name:     config.FeatName,
-				Features: d.GetFeatureValues(d.Candles[i-1:i+config.PolicyRange], config.FeatType),
+				Features: d.GetFeatureValues(d.Candles[i-1-d.InputLen:i], config.FeatType),
 				Label:    signal,
 			}
 		} else {
 			data = domain.Data{
 				Name:     config.FeatName,
-				Features: d.GetFeatureValues(d.Candles[i-1:i+config.PolicyRange], config.FeatType),
+				Features: d.GetFeatureValues(d.Candles[i-1-d.InputLen:i], config.FeatType),
 				Label:    signal,
 			}
 		}

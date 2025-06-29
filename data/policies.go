@@ -2,6 +2,8 @@ package data
 
 import (
 	"github.com/bullean-ai/bullean-go/data/domain"
+	"github.com/bullean-ai/bullean-go/indicators"
+	domain2 "github.com/bullean-ai/bullean-go/strategies/domain"
 )
 
 // ClosePercentagePolicy is a default close price percentage change policy
@@ -16,6 +18,18 @@ func ClosePercentagePolicy(candles []domain.Candle) int {
 	if perChange > .3 {
 		return 1
 	} else if perChange < .3 && perChange >= 0 {
+		return 0
+	} else {
+		return 2
+	}
+}
+
+// MAPercentagePolicy is a default close price percentage change policy
+func MAPercentagePolicy(candles []domain.Candle) int {
+	ema := indicators.MA(candles, 10)
+	if domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0.3 {
+		return 1
+	} else if domain2.PercentageChange(ema[0], ema[len(ema)-1]) < 0.3 && domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0 {
 		return 0
 	} else {
 		return 2
