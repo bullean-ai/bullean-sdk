@@ -20,7 +20,7 @@ func NewDataSet(candles []domain.Candle, input_len int) domain.IDataSet {
 func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.Candle) int) {
 	for i := len(d.Candles) - config.PolicyRange; i >= 1+d.InputLen; i-- {
 		var data domain.Data
-		signal := policy(d.Candles[i-10 : i+config.PolicyRange])
+		signal := policy(d.Candles[i : i+config.PolicyRange])
 		if d.InputLen > 0 {
 			data = domain.Data{
 				Name:     config.FeatName,
