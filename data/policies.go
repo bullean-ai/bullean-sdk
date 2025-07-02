@@ -27,9 +27,9 @@ func ClosePercentagePolicy(candles []domain.Candle) int {
 // MAPercentagePolicy is a default close price percentage change policy
 func MAPercentagePolicy(candles []domain.Candle) int {
 	ema := indicators.MA(candles, 5)
-	if domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0.1 {
+	if domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0.3 {
 		return 1
-	} else if domain2.PercentageChange(ema[0], ema[len(ema)-1]) < 0.1 && domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0 {
+	} else if domain2.PercentageChange(ema[0], ema[len(ema)-1]) < 0.3 && domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0 {
 		return 0
 	} else {
 		return 2
