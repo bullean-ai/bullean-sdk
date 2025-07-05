@@ -88,10 +88,8 @@
   EventsOn("candles.done",(result) => {
     console.log(1)
     if (result == true) {
-      InitCandles("XRPUSDT").then(()=>{
-        candles=[...candles]
-        drawChart()
-      })
+      candles=[...candles]
+      drawChart()
     }
   })
 
