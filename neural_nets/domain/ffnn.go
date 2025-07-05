@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron/synapse"
 	"math/rand"
+	"time"
 )
 
 var DefaultFFNNConfig = func(input_len int) *Config {
@@ -114,6 +115,7 @@ const (
 type Example struct {
 	Input    []float64
 	Response []float64
+	Time     time.Time // Optional
 }
 
 // Examples is a set of input-output pairs
