@@ -3,7 +3,7 @@ module desktop
 go 1.23.8
 
 require (
-	github.com/bullean-ai/bullean-go v0.0.13
+	github.com/bullean-ai/bullean-go v0.0.15
 	github.com/wailsapp/wails/v2 v2.10.1
 )
 

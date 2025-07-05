@@ -76,6 +76,7 @@
   let resultText: string = "Please enter your name below 👇. Yes Sir"
   let candles = []
   let predictions = []
+  let actuals = []
   let name: string
   let chart;
 
@@ -93,12 +94,15 @@
     }
   })
 
+  EventsOn("candles.actuals",result => {
+    actuals =  JSON.parse(result)
+    drawChart()
+  })
+
   EventsOn("candles.new",result => {
     let res = JSON.parse(result)
-    candles = [...candles, res]
-    if (res != undefined || res != null) {
-      drawChart()
-    }
+    candles = [...candles, ...res]
+    drawChart()
   })
 
   function getPredictions(): void {
@@ -117,6 +121,7 @@
       let volume = []
       let chartData = []
       let pred = []
+      let acts = []
       const upColor = '#ec0000';
       const upBorderColor = '#8A0000';
       const downColor = '#00da3c';
@@ -170,8 +175,29 @@
         ]
         pred.push(data)
       }
-      console.log(candles)
-      console.log(predictions)
+
+      for (let i = 0; i<actuals.length; i++) {
+        let act = actuals[i]
+        //let time = dayjs(new Date(prediction["time"]).getTime()).format("dddd, MMM D, hh:mm a")
+        let dateInfo =  new Date(act["time"])
+        const time = new Highcharts.Time({
+          timezone: 'Europe/Istanbul'
+        });
+        const s = time.dateFormat('%Y-%m-%d %H:%M:%S',Date.UTC(dateInfo.getUTCFullYear(),
+                dateInfo.getUTCMonth(),
+                dateInfo.getUTCDate(),
+                dateInfo.getUTCHours(),
+                dateInfo.getUTCMinutes(),
+                dateInfo.getUTCSeconds()
+        ));
+        let data = [
+          s,
+          act["label"]
+        ]
+        acts.push(data)
+      }
+
+      console.log(acts)
 
       // create the chart
       chart = Highcharts.stockChart('container', {
@@ -216,6 +242,12 @@
             id: 'predictions',
             name: 'Predictions',
             data: pred,
+            yAxis: 1
+          }, {
+            type: 'column',
+            id: 'actualvalues',
+            name: 'Actual Values',
+            data: acts,
             yAxis: 1
           }
         ],

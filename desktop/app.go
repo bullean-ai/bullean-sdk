@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/bullean-ai/bullean-go/data"
 	"github.com/bullean-ai/bullean-go/data/domain"
+	"github.com/bullean-ai/bullean-go/indicators"
 	"github.com/bullean-ai/bullean-go/neural_nets"
 	ffnnDomain "github.com/bullean-ai/bullean-go/neural_nets/domain"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/layer/neuron/synapse"
 	"github.com/bullean-ai/bullean-go/neural_nets/ffnn/solver"
+	domain2 "github.com/bullean-ai/bullean-go/strategies/domain"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"math"
 )
@@ -44,7 +46,7 @@ func (a *App) startup(ctx context.Context) {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 1200,
+			HistorySize: 20000,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -97,10 +99,10 @@ func (a *App) InitCandles(symbol string) string {
 
 func (a *App) GetPredictions(symbol string) {
 	fmt.Println(symbol)
-	var examples ffnnDomain.Examples
-	inputLen := 700
-	ranger := 20
-	iterations := 50
+	var traindExamples, testExamples ffnnDomain.Examples
+	inputLen := 2000
+	ranger := 10
+	iterations := 30
 	var lr float64 = 0.004
 	var model1 *ffnn.FFNN
 	//var err error
@@ -121,47 +123,111 @@ func (a *App) GetPredictions(symbol string) {
 		},
 	})
 
-	dataset := data.NewDataSet(a.Candles[symbol], inputLen)
+	trainDataset := data.NewDataSet(a.Candles[symbol][0:len(a.Candles[symbol])-3000], inputLen)
 
-	dataset.CreatePolicy(domain.PolicyConfig{
+	trainDataset.CreatePolicy(domain.PolicyConfig{
 		FeatName:    "feature_per_change",
 		FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
 		PolicyRange: ranger,
-	}, data.MAPercentagePolicy)
-	dataset.SerializeLabels()
-	dataFrame := dataset.GetDataSet()
-	for _, dat := range dataFrame {
+	}, func(candles []domain.Candle) int {
+		ema := indicators.MA(candles, 5)
+		if domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0.1 {
+			return 1
+		} else if domain2.PercentageChange(ema[0], ema[len(ema)-1]) < 0.1 && domain2.PercentageChange(ema[0], ema[len(ema)-1]) >= 0 {
+			return 0
+		} else {
+			return 2
+		}
+	})
+	trainDataset.SerializeLabels()
+	trainDataFrame := trainDataset.GetDataSet()
+	var actuals []struct {
+		Time       string `json:"time"`
+		Prediction int8   `json:"label"`
+	}
+	for _, dat := range trainDataFrame {
 		fmt.Println(dat.Label)
+		label := 0
+		if dat.Label == 1 {
+			label = 1
+		} else if dat.Label == 2 {
+			label = -1
+
+		} else {
+			label = 0
+		}
+		actuals = append(actuals, struct {
+			Time       string `json:"time"`
+			Prediction int8   `json:"label"`
+		}{
+			Time:       dat.Time.Format("2006-01-02T15:04:05Z"),
+			Prediction: int8(label),
+		})
+	}
+	actualsBytes, err := json.Marshal(actuals)
+	if err != nil {
+		fmt.Println("InitCandles ERROR: ", err.Error())
 	}
 
-	for i := 0; i < len(dataFrame); i++ {
+	runtime.EventsEmit(a.ctx, "candles.actuals", string(actualsBytes))
+
+	for i := 0; i < len(trainDataFrame); i++ {
 		label := []float64{}
-		if dataFrame[i].Label == 1 {
+		if trainDataFrame[i].Label == 1 {
 			label = []float64{1, 0, 0}
-		} else if dataFrame[i].Label == 2 {
+		} else if trainDataFrame[i].Label == 2 {
 			label = []float64{0, 1, 0}
 
 		} else {
 			label = []float64{0, 0, 1}
 		}
-		examples = append(examples, ffnnDomain.Example{
-			Input:    dataFrame[i].Features,
+		traindExamples = append(traindExamples, ffnnDomain.Example{
+			Input:    trainDataFrame[i].Features,
 			Response: label,
-			Time:     *dataFrame[i].Time,
+			Time:     trainDataFrame[i].Time,
 		})
 	}
 
-	evaluator.Train(examples, examples)
+	evaluator.Train(traindExamples, traindExamples)
+
+	testDataset := data.NewDataSet(a.Candles[symbol], inputLen)
+	testDataset.CreatePolicy(domain.PolicyConfig{
+		FeatName:    "feature_per_change",
+		FeatType:    domain.FEAT_CLOSE_PERCENTAGE,
+		PolicyRange: ranger,
+	}, data.MAPercentagePolicy)
+	testDataset.SerializeLabels()
+	testDataFrame := testDataset.GetDataSet()
+	for _, dat := range testDataFrame {
+		fmt.Println(dat.Label)
+	}
+
+	for i := 0; i < len(testDataFrame); i++ {
+		label := []float64{}
+		if testDataFrame[i].Label == 1 {
+			label = []float64{1, 0, 0}
+		} else if testDataFrame[i].Label == 2 {
+			label = []float64{0, 1, 0}
+
+		} else {
+			label = []float64{0, 0, 1}
+		}
+		testExamples = append(testExamples, ffnnDomain.Example{
+			Input:    testDataFrame[i].Features,
+			Response: label,
+			Time:     testDataFrame[i].Time,
+		})
+	}
 
 	var predictions []struct {
 		Time       string `json:"time"`
 		Prediction int8   `json:"prediction"`
 	}
 
-	for i := 0; i < len(examples); i++ {
+	for i := 0; i < len(testExamples); i++ {
 		var prediction int8
 
-		pred := evaluator.Predict(examples[i].Input)
+		pred := evaluator.Predict(testExamples[i].Input)
 		buy := math.Round(pred[0])
 		sell := math.Round(pred[1])
 		hold := math.Round(pred[2])
@@ -177,8 +243,8 @@ func (a *App) GetPredictions(symbol string) {
 			Time       string `json:"time"`
 			Prediction int8   `json:"prediction"`
 		}{
-			Time:       examples[i].Time.Format("2006-01-02T15:04:05Z"),
-			Prediction: prediction + 5,
+			Time:       testExamples[i].Time.Format("2006-01-02T15:04:05Z"),
+			Prediction: prediction,
 		})
 	}
 	pBytes, err := json.Marshal(predictions)

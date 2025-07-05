@@ -30,7 +30,7 @@ func main() {
 		StreamReqMsg: domain.StreamReqMsg{
 			TypeOf:      "subscription",
 			History:     true,
-			HistorySize: 4100,
+			HistorySize: 6100,
 			Subscriptions: []domain.Subscription{
 				{
 					Key:   "kline",
@@ -49,10 +49,10 @@ func main() {
 	var examples ffnnDomain.Examples
 	var willTrain = true
 	isReady := false
-	inputLen := 2000
+	inputLen := 3000
 	ranger := 10
 	iterations := 50
-	lr := 0.004
+	var lr float64 = 0.004
 	var model1 *ffnn.FFNN
 	//var err error
 
@@ -200,7 +200,7 @@ func main() {
 					prediction = 0
 				}
 
-				emaOuts := indicators.EMA(candless[len(candless)-16:], 6)
+				emaOuts := indicators.EMA(candless[len(candless)-10:], 6)
 				changedir := 0
 				if domain2.PercentageChange(emaOuts[1], emaOuts[len(emaOuts)-1]) > 0 {
 					changedir = 1
@@ -212,7 +212,7 @@ func main() {
 					fmt.Println("LONG: ", lastLongEnterPrice, lastLongClosePrice, domain2.PercentageChange(lastLongEnterPrice, candle.Close))
 					if prediction == 1 && lastprediction == 1 {
 						return domain2.POS_BUY
-					} else if (prediction == 1 && lastprediction == 1) || changedir == -1 {
+					} else if (prediction == -1 && lastprediction == -1) || changedir == -1 {
 						return domain2.POS_SELL
 					} else {
 						return domain2.POS_HOLD
@@ -225,7 +225,7 @@ func main() {
 					fmt.Println("SHORT: ", lastShortEnterPrice, lastShortClosePrice, domain2.PercentageChange(lastShortEnterPrice, candle.Close))
 					if prediction == -1 && lastprediction == -1 {
 						return domain2.POS_BUY
-					} else if (prediction == -1 && lastprediction == -1) || changedir == 1 {
+					} else if (prediction == 1 && lastprediction == 1) || changedir == 1 {
 						return domain2.POS_SELL
 					} else {
 						return domain2.POS_HOLD
