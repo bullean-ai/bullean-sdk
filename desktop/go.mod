@@ -3,20 +3,17 @@ module desktop
 go 1.23.8
 
 require (
-	github.com/bullean-ai/bullean-go v0.0.9
+	github.com/bullean-ai/bullean-go v0.0.13
 	github.com/wailsapp/wails/v2 v2.10.1
 )
 
 require (
-	github.com/adshao/go-binance/v2 v2.8.3 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
-	github.com/bitly/go-simplejson v0.5.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jchv/go-winloader v0.0.0-20250406163304-c1995be93bd1 // indirect
-	github.com/jpillora/backoff v1.0.0 // indirect
 	github.com/labstack/echo/v4 v4.13.4 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
@@ -29,7 +26,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.51.0 // indirect
-	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
