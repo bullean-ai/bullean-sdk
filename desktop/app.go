@@ -54,9 +54,15 @@ func (a *App) startup(ctx context.Context) {
 		},
 	})
 	a.wsClient.OnReady(func(candles []domain.Candle) {
-		fmt.Println("InitCandles: ", len(candles))
-		runtime.EventsEmit(ctx, "candles.done", true)
-		fmt.Println(1)
+		for _, c := range candles {
+			a.Candles[c.Symbol] = append(a.Candles[c.Symbol], c)
+			candleBytes, err := json.Marshal(c)
+			if err != nil {
+				fmt.Println("InitCandles ERROR: ", err.Error())
+			}
+
+			runtime.EventsEmit(ctx, "candles.init", string(candleBytes))
+		}
 	})
 	a.wsClient.OnCandle(func(candles []domain.Candle) {
 
@@ -76,7 +82,6 @@ func (a *App) startup(ctx context.Context) {
 
 // Greet returns a greeting for the given name
 func (a *App) InitCandles(symbol string) string {
-	fmt.Println("InitCandles: ", symbol)
 	_, isOk := a.Candles[symbol]
 	if isOk {
 		candleBytes, err := json.Marshal(a.Candles[symbol])
