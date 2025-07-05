@@ -68,7 +68,18 @@ func (c client) OnReady(fn func([]domain.Candle)) {
 		}
 		if msg.TypeOf == domain.HISTORY {
 			for _, candle := range msg.Candles {
-				candles = append(candles, candle)
+				candleCopy := domain.Candle{
+					Symbol:    candle.Symbol,
+					OpenTime:  candle.OpenTime,
+					Open:      candle.Open,
+					High:      candle.High,
+					Low:       candle.Low,
+					Close:     candle.Close,
+					CloseTime: candle.CloseTime,
+					Volume:    candle.Volume,
+					Trades:    candle.Trades,
+				}
+				candles = append(candles, candleCopy)
 			}
 		}
 		if msg.IsDone {
