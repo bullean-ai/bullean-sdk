@@ -53,15 +53,15 @@ type StreamResMsg struct {
 	IsDone  bool         `json:"is_done"`
 }
 type Candle struct {
-	Symbol    string     `json:"s"`
-	OpenTime  *time.Time `json:"t"`
-	Open      float64    `json:"o"`
-	High      float64    `json:"h"`
-	Low       float64    `json:"l"`
-	Close     float64    `json:"c"`
-	CloseTime *time.Time `json:"T"`
-	Volume    float64    `json:"v"`
-	Trades    []*Trade   `json:"tr"`
+	Symbol    string    `json:"s"`
+	OpenTime  time.Time `json:"t"`
+	Open      float64   `json:"o"`
+	High      float64   `json:"h"`
+	Low       float64   `json:"l"`
+	Close     float64   `json:"c"`
+	CloseTime time.Time `json:"T"`
+	Volume    float64   `json:"v"`
+	Trades    []*Trade  `json:"tr"`
 }
 
 type Trade struct {
@@ -76,10 +76,10 @@ type Trade struct {
 }
 
 type Data struct {
-	Name     string     `json:"name"`
-	Features []float64  `json:"feature"`
-	Label    int        `json:"label"`
-	Time     *time.Time `json:"time"` // Optional
+	Name     string    `json:"name"`
+	Features []float64 `json:"feature"`
+	Label    int       `json:"label"`
+	Time     time.Time `json:"time"` // Optional
 }
 
 type PolicyConfig struct {
