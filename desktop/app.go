@@ -56,13 +56,12 @@ func (a *App) startup(ctx context.Context) {
 	a.wsClient.OnReady(func(candles []domain.Candle) {
 		for _, c := range candles {
 			a.Candles[c.Symbol] = append(a.Candles[c.Symbol], c)
-			candleBytes, err := json.Marshal(c)
-			if err != nil {
-				fmt.Println("InitCandles ERROR: ", err.Error())
-			}
-
-			runtime.EventsEmit(ctx, "candles.init", string(candleBytes))
 		}
+		candleBytes, err := json.Marshal(candles)
+		if err != nil {
+			fmt.Println("InitCandles ERROR: ", err.Error())
+		}
+		runtime.EventsEmit(ctx, "candles.init", string(candleBytes))
 		runtime.EventsEmit(ctx, "candles.done", true)
 	})
 	a.wsClient.OnCandle(func(candles []domain.Candle) {
