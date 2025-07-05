@@ -81,7 +81,7 @@
 
    EventsOn("candles.init",result => {
     let res = JSON.parse(result)
-    candles = [...candles, res]
+    candles = [...candles, ...res]
     console.log(1)
   })
 
