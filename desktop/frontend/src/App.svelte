@@ -79,13 +79,11 @@
   let name: string
   let chart;
 
- /*
    EventsOn("candles.init",result => {
     let res = JSON.parse(result)
     candles = [...candles, res]
     console.log(1)
   })
-  */
 
   EventsOn("candles.done",(result) => {
     console.log(1)
