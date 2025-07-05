@@ -76,9 +76,10 @@ type Trade struct {
 }
 
 type Data struct {
-	Name     string    `json:"name"`
-	Features []float64 `json:"feature"`
-	Label    int       `json:"label"`
+	Name     string     `json:"name"`
+	Features []float64  `json:"feature"`
+	Label    int        `json:"label"`
+	Time     *time.Time `json:"time"` // Optional
 }
 
 type PolicyConfig struct {
