@@ -26,12 +26,14 @@ func (d *dataSet) CreatePolicy(config domain.PolicyConfig, policy func([]domain.
 				Name:     config.FeatName,
 				Features: d.GetFeatureValues(d.Candles[i-1-d.InputLen:i], config.FeatType),
 				Label:    signal,
+				Time:     d.Candles[i].OpenTime,
 			}
 		} else {
 			data = domain.Data{
 				Name:     config.FeatName,
 				Features: d.GetFeatureValues(d.Candles[i-1-d.InputLen:i], config.FeatType),
 				Label:    signal,
+				Time:     d.Candles[i].OpenTime,
 			}
 		}
 
