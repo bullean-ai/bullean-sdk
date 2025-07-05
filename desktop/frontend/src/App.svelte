@@ -69,7 +69,7 @@
 
 <script lang="ts">
   import {InitCandles, GetPredictions} from '../wailsjs/go/main/App.js'
-  import {EventsOnce,EventsOn,EventsOnMultiple} from "../wailsjs/runtime";
+  import {EventsOn} from "../wailsjs/runtime";
   import Highcharts from 'highcharts/highstock';
   import dayjs from 'dayjs';
 
@@ -87,7 +87,7 @@
   })
   */
 
-  EventsOnce("candles.done",(result) => {
+  EventsOn("candles.done",(result) => {
     console.log(1)
     if (result == true) {
       InitCandles("XRPUSDT").then(()=>{
@@ -97,22 +97,22 @@
     }
   })
 
-  EventsOnMultiple("candles.new",result => {
+  EventsOn("candles.new",result => {
     let res = JSON.parse(result)
     candles = [...candles, res]
     if (res != undefined || res != null) {
       drawChart()
     }
-  },100000000)
+  })
 
   function getPredictions(): void {
     GetPredictions("XRPUSDT")
   }
 
-  EventsOnMultiple("candles.prediction",result => {
+  EventsOn("candles.prediction",result => {
     predictions = JSON.parse(result)
     drawChart()
-  },100000000)
+  })
 
   function drawChart() {
     try {

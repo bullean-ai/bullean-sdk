@@ -32,7 +32,6 @@ func NewApp() *App {
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
 
 	quoteAsset := "XRP"
 	baseAsset := "USDT"
@@ -56,8 +55,8 @@ func (a *App) startup(ctx context.Context) {
 	})
 	a.wsClient.OnReady(func(candles []domain.Candle) {
 		fmt.Println("InitCandles: ", len(candles))
-
-		runtime.EventsEmit(a.ctx, "candles.done", true)
+		runtime.EventsEmit(ctx, "candles.done", true)
+		fmt.Println(1)
 	})
 	a.wsClient.OnCandle(func(candles []domain.Candle) {
 
@@ -68,10 +67,11 @@ func (a *App) startup(ctx context.Context) {
 					fmt.Println("InitCandles ERROR: ", err.Error())
 				}
 
-				runtime.EventsEmit(a.ctx, "candles.new", string(candleBytes))
+				runtime.EventsEmit(ctx, "candles.new", string(candleBytes))
 			}
 		}
 	})
+	a.ctx = ctx
 }
 
 // Greet returns a greeting for the given name
