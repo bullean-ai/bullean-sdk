@@ -63,6 +63,7 @@ func (a *App) startup(ctx context.Context) {
 
 			runtime.EventsEmit(ctx, "candles.init", string(candleBytes))
 		}
+		runtime.EventsEmit(ctx, "candles.done", true)
 	})
 	a.wsClient.OnCandle(func(candles []domain.Candle) {
 
